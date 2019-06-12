@@ -1,0 +1,46 @@
+{
+  "name": "challenge-processor-es",
+  "version": "1.0.0",
+  "description": "Topcoder - Challenge ES Processor",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "init-es": "node src/init-es.js",
+    "view-data": "node test/common/view-data.js",
+    "test": "mocha test/unit/*.test.js --timeout 30000 --require test/unit/prepare.js --exit",
+    "e2e": "mocha test/e2e/*.test.js --timeout 30000 --exit",
+    "cov": "nyc --reporter=html --reporter=text mocha test/unit/*.test.js --timeout 30000 --require test/unit/prepare.js --exit",
+    "cov-e2e": "nyc --reporter=html --reporter=text mocha test/e2e/*.test.js --timeout 30000 --exit"
+  },
+  "author": "TCSCODER",
+  "license": "none",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.1",
+    "standard": "^12.0.1",
+    "mocha-prepare": "^0.1.0",
+    "nock": "^9.4.4",
+    "uuid": "^3.3.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.466.0",
+    "bluebird": "^3.5.1",
+    "config": "^3.0.1",
+    "elasticsearch": "^15.1.1",
+    "get-parameter-names": "^0.3.0",
+    "http-aws-es": "^6.0.0",
+    "joi": "^14.0.0",
+    "lodash": "^4.17.10",
+    "no-kafka": "^3.4.3",
+    "topcoder-healthcheck-dropin": "^1.0.2",
+    "winston": "^3.1.0"
+  },
+  "standard": {
+    "env": [
+      "mocha"
+    ]
+  }
+}
