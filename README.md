@@ -178,6 +178,7 @@ info: {
     "created": "2018-01-01T16:00:00.000Z",
     "createdBy": "admin"
 }
+info: Done!
 ```
 
 - you may write invalid message like:
@@ -190,62 +191,6 @@ info: {
 
 - start kafka-console-producer to write messages to `challenge.action.updated` topic:
   `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.updated`
-- write message to update data:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Design", "name": "test2", "description": "desc2", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review2", "isActive": true, "duration": 20000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 900 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "attachments": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b234", "fileSize": 88888, "fileName": "test2.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["group1"], "created": "2019-02-16T00:00:00", "createdBy": "admin", "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-info: Elasticsearch data:
-info: {
-    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
-    "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff",
-    "track": "Design",
-    "name": "test2",
-    "description": "desc2",
-    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
-    "phases": [
-        {
-            "duration": 20000,
-            "name": "review2",
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "isActive": true
-        }
-    ],
-    "prizeSets": [
-        {
-            "prizes": [
-                {
-                    "type": "winning prize",
-                    "value": 900
-                }
-            ],
-            "type": "prize"
-        }
-    ],
-    "reviewType": "code review",
-    "tags": [
-        "code"
-    ],
-    "projectId": 123,
-    "forumId": 456,
-    "status": "Active",
-    "created": "2019-02-15T16:00:00.000Z",
-    "createdBy": "admin",
-    "attachments": [
-        {
-            "fileName": "test2.txt",
-            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
-            "fileSize": 88888,
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b234"
-        }
-    ],
-    "updatedBy": "user",
-    "groups": [
-        "group1"
-    ],
-    "updated": "2019-02-16T16:00:00.000Z"
-}
-```
 
 - write message to partially update data:
   `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
@@ -262,21 +207,21 @@ info: {
     "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd",
     "phases": [
         {
-            "duration": 20000,
-            "name": "review2",
             "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "isActive": true
+            "name": "review",
+            "isActive": true,
+            "duration": 10000
         }
     ],
     "prizeSets": [
         {
+            "type": "prize",
             "prizes": [
                 {
                     "type": "winning prize",
-                    "value": 900
+                    "value": 500
                 }
-            ],
-            "type": "prize"
+            ]
         }
     ],
     "reviewType": "code review",
@@ -286,16 +231,8 @@ info: {
     "projectId": 123,
     "forumId": 456,
     "status": "Active",
-    "created": "2019-02-15T16:00:00.000Z",
+    "created": "2018-01-01T16:00:00.000Z",
     "createdBy": "admin",
-    "attachments": [
-        {
-            "fileName": "test2.txt",
-            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
-            "fileSize": 88888,
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b234"
-        }
-    ],
     "updatedBy": "admin",
     "groups": [
         "group2",
@@ -303,6 +240,75 @@ info: {
     ],
     "updated": "2019-02-16T17:00:00.000Z"
 }
+info: Done!
+```
+
+
+- write message to update data:
+  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 20 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "attachments": [{ "id": "8e17091c-466b-4c17-b6d9-dfa16300b234", "fileSize": 88, "fileName": "t.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["g1", "g2"], "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+info: Elasticsearch data:
+info: {
+    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
+    "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10",
+    "track": "Code",
+    "name": "test",
+    "description": "a b c",
+    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
+    "phases": [
+        {
+            "duration": 20,
+            "name": "review",
+            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
+            "isActive": true
+        }
+    ],
+    "prizeSets": [
+        {
+            "prizes": [
+                {
+                    "type": "win",
+                    "value": 90
+                }
+            ],
+            "type": "prize"
+        }
+    ],
+    "reviewType": "code",
+    "tags": [
+        "tag1",
+        "tag2"
+    ],
+    "projectId": 12,
+    "forumId": 45,
+    "status": "Active",
+    "created": "2018-01-01T16:00:00.000Z",
+    "createdBy": "admin",
+    "updatedBy": "user",
+    "groups": [
+        "g1",
+        "g2"
+    ],
+    "updated": "2019-02-16T16:00:00.000Z",
+    "attachments": [
+        {
+            "fileName": "t.txt",
+            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
+            "fileSize": 88,
+            "id": "8e17091c-466b-4c17-b6d9-dfa16300b234"
+        }
+    ],
+    "challengeSettings": [
+        {
+            "type": "2d88c598-70f0-4054-8a45-7da38d0ca424",
+            "value": "ab"
+        }
+    ],
+    "legacyId": 55
+}
+info: Done!
 ```
 
 - you may write invalid message like:
@@ -315,15 +321,4 @@ info: {
 
 - to test the health check API, run `export PORT=5000`, start the processor, then browse `http://localhost:5000/health` in a browser,
   and you will see result `{"checksRun":1}`
-
-
-
-## Notes
-
-There are some enhancements done against the reference code:
-- for Kafka connection, GroupConsumer is used instead of SimpleConsumer, the group consumer can consume messages
-  generated even when the processor app is down
-- async/await are used instead of generator functions
-- provides docker of Elasticsearch
-- improved tests
 

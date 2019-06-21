@@ -41,6 +41,7 @@ const challengeCreatedMessage = {
     tags: ['code'],
     projectId: 12345,
     forumId: 123123,
+    legacyId: 787878,
     status: 'Active',
     groups: ['group1', 'group2'],
     created: '2019-02-03T00:00:00',
@@ -81,6 +82,7 @@ const challengeUpdatedMessage = {
     tags: ['nodejs'],
     projectId: 121212,
     forumId: 456456,
+    legacyId: 898989,
     status: 'Active',
     attachments: [{
       id: uuid(),

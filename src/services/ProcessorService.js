@@ -60,6 +60,7 @@ create.schema = {
       tags: Joi.array().items(Joi.string().required()).min(1).required(), // tag names
       projectId: Joi.number().integer().positive().required(),
       forumId: Joi.number().integer().positive().required(),
+      legacyId: Joi.number().integer().positive(),
       status: Joi.string().required(),
       groups: Joi.array().items(Joi.string()), // group names
       created: Joi.date().required(),
@@ -97,7 +98,7 @@ update.schema = {
       challengeSettings: Joi.array().items(Joi.object().keys({
         type: Joi.string().uuid().required(),
         value: Joi.string().required()
-      })).unique((a, b) => a.type === b.type),
+      })).unique((a, b) => a.type === b.type).allow(null),
       timelineTemplateId: Joi.string().uuid(),
       phases: Joi.array().items(Joi.object().keys({
         id: Joi.string().uuid().required(),
@@ -120,14 +121,15 @@ update.schema = {
       tags: Joi.array().items(Joi.string()), // tag names
       projectId: Joi.number().integer().positive(),
       forumId: Joi.number().integer().positive(),
+      legacyId: Joi.number().integer().positive().allow(null),
       status: Joi.string(),
       attachments: Joi.array().items(Joi.object().keys({
         id: Joi.string().uuid().required(),
         fileSize: Joi.number().integer().positive().required(),
         fileName: Joi.string().required(),
         challengeId: Joi.string().uuid().required()
-      })),
-      groups: Joi.array().items(Joi.string()), // group names
+      })).allow(null),
+      groups: Joi.array().items(Joi.string()).allow(null), // group names
       created: Joi.date(),
       createdBy: Joi.string(), // user handle
       updated: Joi.date().required(),
