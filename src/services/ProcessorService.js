@@ -59,7 +59,7 @@ create.schema = {
       reviewType: Joi.string().required(),
       tags: Joi.array().items(Joi.string().required()).min(1).required(), // tag names
       projectId: Joi.number().integer().positive().required(),
-      forumId: Joi.number().integer().positive().required(),
+      forumId: Joi.number().integer().positive(),
       legacyId: Joi.number().integer().positive(),
       status: Joi.string().required(),
       groups: Joi.array().items(Joi.string()), // group names
