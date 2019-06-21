@@ -9,7 +9,7 @@ const challengeId = uuid()
 const notFoundId = uuid()
 
 const challengeCreatedMessage = {
-  topic: 'challenge.action.created',
+  topic: 'challenge.notification.create',
   originator: 'challenge-api',
   timestamp: '2019-02-03T00:00:00',
   'mime-type': 'application/json',
@@ -50,7 +50,7 @@ const challengeCreatedMessage = {
 }
 
 const challengeUpdatedMessage = {
-  topic: 'challenge.action.updated',
+  topic: 'challenge.notification.update',
   originator: 'challenge-api',
   timestamp: '2019-02-04T01:01:00',
   'mime-type': 'application/json',
@@ -99,7 +99,7 @@ const challengeUpdatedMessage = {
 }
 
 const challengePartiallyUpdatedMessage = {
-  topic: 'challenge.action.updated',
+  topic: 'challenge.notification.update',
   originator: 'challenge-api',
   timestamp: '2019-02-03T01:01:00',
   'mime-type': 'application/json',

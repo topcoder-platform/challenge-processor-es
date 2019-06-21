@@ -21,8 +21,8 @@ The following parameters can be set in config files or in env variables:
 - KAFKA_CLIENT_CERT_KEY: Kafka connection private key, optional; default value is undefined;
     if not provided, then SSL connection is not used, direct insecure connection is used;
     if provided, it can be either path to private key file or private key content
-- CREATE_DATA_TOPIC: create data Kafka topic, default value is 'challenge.action.created'
-- UPDATE_DATA_TOPIC: update data Kafka topic, default value is 'challenge.action.updated'
+- CREATE_DATA_TOPIC: create data Kafka topic, default value is 'challenge.notification.create'
+- UPDATE_DATA_TOPIC: update data Kafka topic, default value is 'challenge.notification.update'
 - esConfig: config object for Elasticsearch
 
 Refer to `esConfig` variable in `config/default.js` for ES related configuration.
@@ -45,17 +45,17 @@ Config for tests are at `config/test.js`, it overrides some default config.
   `bin/kafka-server-start.sh config/server.properties`
 - note that the zookeeper server is at localhost:2181, and Kafka server is at localhost:9092
 - use another terminal, go to same directory, create some topics:
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.created`
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.updated`
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.notification.create`
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.notification.update`
 - verify that the topics are created:
   `bin/kafka-topics.sh --list --zookeeper localhost:2181`,
   it should list out the created topics
-- run the producer and then write some message into the console to send to the `challenge.action.created` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.created`
+- run the producer and then write some message into the console to send to the `challenge.notification.create` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.create`
   in the console, write message, one message per line:
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
+  `{ "topic": "challenge.notification.create", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
 - optionally, use another terminal, go to same directory, start a consumer to view the messages:
-  `bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.action.created --from-beginning`
+  `bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.notification.create --from-beginning`
 - writing/reading messages to/from other topics are similar
 
 
@@ -134,10 +134,10 @@ npm run cov-e2e
 ## Verification
 
 - start kafka server, start elasticsearch, initialize Elasticsearch, start processor app
-- start kafka-console-producer to write messages to `challenge.action.created` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.created`
+- start kafka-console-producer to write messages to `challenge.notification.create` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.create`
 - write message:
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
+  `{ "topic": "challenge.notification.create", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the created data, you will see the data are properly created:
 
 ```bash
@@ -182,18 +182,18 @@ info: Done!
 ```
 
 - you may write invalid message like:
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "invalid", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2019-02-16T00:00:00", "createdBy": "admin" } }`
+  `{ "topic": "challenge.notification.create", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "invalid", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2019-02-16T00:00:00", "createdBy": "admin" } }`
 
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": -456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
+  `{ "topic": "challenge.notification.create", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": -456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
 
   `{ [ { abc`
 - then in the app console, you will see error messages
 
-- start kafka-console-producer to write messages to `challenge.action.updated` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.updated`
+- start kafka-console-producer to write messages to `challenge.notification.update` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
 
 - write message to partially update data:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
@@ -245,7 +245,7 @@ info: Done!
 
 
 - write message to update data:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 20 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "attachments": [{ "id": "8e17091c-466b-4c17-b6d9-dfa16300b234", "fileSize": 88, "fileName": "t.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["g1", "g2"], "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 20 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "attachments": [{ "id": "8e17091c-466b-4c17-b6d9-dfa16300b234", "fileSize": 88, "fileName": "t.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["g1", "g2"], "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
@@ -312,9 +312,9 @@ info: Done!
 ```
 
 - you may write invalid message like:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "123", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "123", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": ["Code"], "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": ["Code"], "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 
   `[ [ [ } } }`
 - then in the app console, you will see error messages
