@@ -37,9 +37,10 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
   }
   return (async () => {
     switch (topic) {
-      case config.CREATE_DATA_TOPIC:
-        await ProcessorService.create(messageJSON)
-        break
+      // TODO: Remove all code related to challenge creation
+      // case config.CREATE_DATA_TOPIC:
+      //   await ProcessorService.create(messageJSON)
+      //   break
       case config.UPDATE_DATA_TOPIC:
         await ProcessorService.update(messageJSON)
         break
