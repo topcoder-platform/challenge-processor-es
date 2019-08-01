@@ -8,47 +8,6 @@ const challengeId = uuid()
 
 const notFoundId = uuid()
 
-const challengeCreatedMessage = {
-  topic: 'challenge.notification.create',
-  originator: 'challenge-api',
-  timestamp: '2019-02-03T00:00:00',
-  'mime-type': 'application/json',
-  payload: {
-    id: challengeId,
-    typeId: uuid(),
-    track: 'Code',
-    name: 'test challenge',
-    description: 'some description',
-    challengeSettings: [{ type: uuid(), value: 'value' }],
-    timelineTemplateId: uuid(),
-    phases: [{
-      id: uuid(),
-      name: 'review',
-      description: 'review phase',
-      isActive: true,
-      duration: 10000
-    }],
-    prizeSets: [{
-      type: 'Challenge prizes',
-      description: 'prize desc',
-      prizes: [{
-        description: 'winner prize',
-        type: 'winning prize',
-        value: 500
-      }]
-    }],
-    reviewType: 'code review',
-    tags: ['code'],
-    projectId: 12345,
-    forumId: 123123,
-    legacyId: 787878,
-    status: 'Active',
-    groups: ['group1', 'group2'],
-    created: '2019-02-03T00:00:00',
-    createdBy: 'admin'
-  }
-}
-
 const challengeUpdatedMessage = {
   topic: 'challenge.notification.update',
   originator: 'challenge-api',
@@ -126,7 +85,6 @@ const challengePartiallyUpdatedMessage = {
 module.exports = {
   challengeId,
   notFoundId,
-  challengeCreatedMessage,
   challengeUpdatedMessage,
   challengePartiallyUpdatedMessage
 }

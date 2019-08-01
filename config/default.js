@@ -13,7 +13,6 @@ module.exports = {
   KAFKA_CLIENT_CERT: process.env.KAFKA_CLIENT_CERT,
   KAFKA_CLIENT_CERT_KEY: process.env.KAFKA_CLIENT_CERT_KEY,
 
-  CREATE_DATA_TOPIC: process.env.CREATE_DATA_TOPIC || 'challenge.notification.create',
   UPDATE_DATA_TOPIC: process.env.UPDATE_DATA_TOPIC || 'challenge.notification.update',
 
   esConfig: {

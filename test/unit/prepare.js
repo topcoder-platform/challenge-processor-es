@@ -52,6 +52,8 @@ prepare(function (done) {
         return [404, {}]
       }
     })
+    .delete(`_doc/${challengeId}`)
+    .reply(200)
     .get(() => true)
     .query(true)
     .reply(404)
