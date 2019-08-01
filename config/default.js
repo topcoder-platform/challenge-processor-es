@@ -13,8 +13,7 @@ module.exports = {
   KAFKA_CLIENT_CERT: process.env.KAFKA_CLIENT_CERT,
   KAFKA_CLIENT_CERT_KEY: process.env.KAFKA_CLIENT_CERT_KEY,
 
-  CREATE_DATA_TOPIC: process.env.CREATE_DATA_TOPIC || 'challenge.action.created',
-  UPDATE_DATA_TOPIC: process.env.UPDATE_DATA_TOPIC || 'challenge.action.updated',
+  UPDATE_DATA_TOPIC: process.env.UPDATE_DATA_TOPIC || 'challenge.notification.update',
 
   esConfig: {
     HOST: process.env.ES_HOST || 'localhost:9200',

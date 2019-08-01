@@ -21,8 +21,7 @@ The following parameters can be set in config files or in env variables:
 - KAFKA_CLIENT_CERT_KEY: Kafka connection private key, optional; default value is undefined;
     if not provided, then SSL connection is not used, direct insecure connection is used;
     if provided, it can be either path to private key file or private key content
-- CREATE_DATA_TOPIC: create data Kafka topic, default value is 'challenge.action.created'
-- UPDATE_DATA_TOPIC: update data Kafka topic, default value is 'challenge.action.updated'
+- UPDATE_DATA_TOPIC: update data Kafka topic, default value is 'challenge.notification.update'
 - esConfig: config object for Elasticsearch
 
 Refer to `esConfig` variable in `config/default.js` for ES related configuration.
@@ -44,20 +43,17 @@ Config for tests are at `config/test.js`, it overrides some default config.
 - use another terminal, go to same directory, start the Kafka server:
   `bin/kafka-server-start.sh config/server.properties`
 - note that the zookeeper server is at localhost:2181, and Kafka server is at localhost:9092
-- use another terminal, go to same directory, create some topics:
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.created`
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.updated`
-- verify that the topics are created:
+- use another terminal, go to same directory, create update topic:
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.notification.update`
+- verify that the topic is created:
   `bin/kafka-topics.sh --list --zookeeper localhost:2181`,
-  it should list out the created topics
-- run the producer and then write some message into the console to send to the `challenge.action.created` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.created`
+  it should list out the created topic
+- run the producer and then write some message into the console to send to the `challenge.notification.update` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
   in the console, write message, one message per line:
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 - optionally, use another terminal, go to same directory, start a consumer to view the messages:
-  `bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.action.created --from-beginning`
-- writing/reading messages to/from other topics are similar
-
+  `bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.notification.update --from-beginning`
 
 ## Local Elasticsearch setup
 
@@ -134,10 +130,12 @@ npm run cov-e2e
 ## Verification
 
 - start kafka server, start elasticsearch, initialize Elasticsearch, start processor app
-- start kafka-console-producer to write messages to `challenge.action.created` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.created`
-- write message:
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
+- Before testing update message, we need to create a record in ES. If you are using the ES from docker-es and using default configuration variables, use the below command to create a record in ES through curl.
+
+```bash
+curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"name\":\"review\",\"isActive\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
+```
+
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the created data, you will see the data are properly created:
 
 ```bash
@@ -178,77 +176,13 @@ info: {
     "created": "2018-01-01T16:00:00.000Z",
     "createdBy": "admin"
 }
+info: Done!
 ```
-
-- you may write invalid message like:
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "invalid", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "created": "2019-02-16T00:00:00", "createdBy": "admin" } }`
-
-  `{ "topic": "challenge.action.created", "originator": "challenge-api", "timestamp": "2019-02-16T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test", "description": "desc", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 10000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 500 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": -456, "status": "Active", "created": "2018-01-02T00:00:00", "createdBy": "admin" } }`
-
-  `{ [ { abc`
-- then in the app console, you will see error messages
-
-- start kafka-console-producer to write messages to `challenge.action.updated` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.updated`
-- write message to update data:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Design", "name": "test2", "description": "desc2", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review2", "isActive": true, "duration": 20000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "winning prize", "value": 900 }] }], "reviewType": "code review", "tags": ["code"], "projectId": 123, "forumId": 456, "status": "Active", "attachments": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b234", "fileSize": 88888, "fileName": "test2.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["group1"], "created": "2019-02-16T00:00:00", "createdBy": "admin", "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-info: Elasticsearch data:
-info: {
-    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
-    "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff",
-    "track": "Design",
-    "name": "test2",
-    "description": "desc2",
-    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
-    "phases": [
-        {
-            "duration": 20000,
-            "name": "review2",
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "isActive": true
-        }
-    ],
-    "prizeSets": [
-        {
-            "prizes": [
-                {
-                    "type": "winning prize",
-                    "value": 900
-                }
-            ],
-            "type": "prize"
-        }
-    ],
-    "reviewType": "code review",
-    "tags": [
-        "code"
-    ],
-    "projectId": 123,
-    "forumId": 456,
-    "status": "Active",
-    "created": "2019-02-15T16:00:00.000Z",
-    "createdBy": "admin",
-    "attachments": [
-        {
-            "fileName": "test2.txt",
-            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
-            "fileSize": 88888,
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b234"
-        }
-    ],
-    "updatedBy": "user",
-    "groups": [
-        "group1"
-    ],
-    "updated": "2019-02-16T16:00:00.000Z"
-}
-```
+- start kafka-console-producer to write messages to `challenge.notification.update` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
 
 - write message to partially update data:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
@@ -262,21 +196,21 @@ info: {
     "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd",
     "phases": [
         {
-            "duration": 20000,
-            "name": "review2",
             "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "isActive": true
+            "name": "review",
+            "isActive": true,
+            "duration": 10000
         }
     ],
     "prizeSets": [
         {
+            "type": "prize",
             "prizes": [
                 {
                     "type": "winning prize",
-                    "value": 900
+                    "value": 500
                 }
-            ],
-            "type": "prize"
+            ]
         }
     ],
     "reviewType": "code review",
@@ -286,16 +220,8 @@ info: {
     "projectId": 123,
     "forumId": 456,
     "status": "Active",
-    "created": "2019-02-15T16:00:00.000Z",
+    "created": "2018-01-01T16:00:00.000Z",
     "createdBy": "admin",
-    "attachments": [
-        {
-            "fileName": "test2.txt",
-            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
-            "fileSize": 88888,
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b234"
-        }
-    ],
     "updatedBy": "admin",
     "groups": [
         "group2",
@@ -303,27 +229,83 @@ info: {
     ],
     "updated": "2019-02-16T17:00:00.000Z"
 }
+info: Done!
+```
+- write message to update data:
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 20 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "attachments": [{ "id": "8e17091c-466b-4c17-b6d9-dfa16300b234", "fileSize": 88, "fileName": "t.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["g1", "g2"], "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+info: Elasticsearch data:
+info: {
+    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
+    "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10",
+    "track": "Code",
+    "name": "test",
+    "description": "a b c",
+    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
+    "phases": [
+        {
+            "duration": 20,
+            "name": "review",
+            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
+            "isActive": true
+        }
+    ],
+    "prizeSets": [
+        {
+            "prizes": [
+                {
+                    "type": "win",
+                    "value": 90
+                }
+            ],
+            "type": "prize"
+        }
+    ],
+    "reviewType": "code",
+    "tags": [
+        "tag1",
+        "tag2"
+    ],
+    "projectId": 12,
+    "forumId": 45,
+    "status": "Active",
+    "created": "2018-01-01T16:00:00.000Z",
+    "createdBy": "admin",
+    "updatedBy": "user",
+    "groups": [
+        "g1",
+        "g2"
+    ],
+    "updated": "2019-02-16T16:00:00.000Z",
+    "attachments": [
+        {
+            "fileName": "t.txt",
+            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
+            "fileSize": 88,
+            "id": "8e17091c-466b-4c17-b6d9-dfa16300b234"
+        }
+    ],
+    "challengeSettings": [
+        {
+            "type": "2d88c598-70f0-4054-8a45-7da38d0ca424",
+            "value": "ab"
+        }
+    ],
+    "legacyId": 55
+}
+info: Done!
 ```
 
 - you may write invalid message like:
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "123", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "123", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 
-  `{ "topic": "challenge.action.updated", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": ["Code"], "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": ["Code"], "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 
   `[ [ [ } } }`
 - then in the app console, you will see error messages
 
 - to test the health check API, run `export PORT=5000`, start the processor, then browse `http://localhost:5000/health` in a browser,
   and you will see result `{"checksRun":1}`
-
-
-
-## Notes
-
-There are some enhancements done against the reference code:
-- for Kafka connection, GroupConsumer is used instead of SimpleConsumer, the group consumer can consume messages
-  generated even when the processor app is down
-- async/await are used instead of generator functions
-- provides docker of Elasticsearch
-- improved tests
 

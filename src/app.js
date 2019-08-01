@@ -36,16 +36,7 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
     return
   }
   return (async () => {
-    switch (topic) {
-      case config.CREATE_DATA_TOPIC:
-        await ProcessorService.create(messageJSON)
-        break
-      case config.UPDATE_DATA_TOPIC:
-        await ProcessorService.update(messageJSON)
-        break
-      default:
-        throw new Error(`Invalid topic: ${topic}`)
-    }
+    await ProcessorService.update(messageJSON)
   })()
     // commit offset
     .then(() => consumer.commitOffset({ topic, partition, offset: m.offset }))
@@ -68,7 +59,7 @@ function check () {
 logger.info('Starting kafka consumer')
 consumer
   .init([{
-    subscriptions: [config.CREATE_DATA_TOPIC, config.UPDATE_DATA_TOPIC],
+    subscriptions: [config.UPDATE_DATA_TOPIC],
     handler: dataHandler
   }])
   .then(() => {
