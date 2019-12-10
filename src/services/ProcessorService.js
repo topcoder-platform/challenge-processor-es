@@ -6,8 +6,28 @@ const Joi = require('joi')
 const logger = require('../common/logger')
 const helper = require('../common/helper')
 const config = require('config')
+const moment = require('moment')
 
 const client = helper.getESClient()
+
+/**
+ * Get the end date of a challenge phase
+ * @param {Object} phase the phase object
+ * @param {Object} challenge the challenge object
+ * @param {Object} startDate the challenge start date to use as a starting point
+ */
+function getPhaseEndDate (phase, challenge, startDate) {
+  const phases = challenge.phases.reduce((obj, elem) => {
+    obj[elem.id] = elem
+    return obj
+  }, {})
+  let result = moment(startDate)
+  while (phase) {
+    result.add(phase.duration, 'hours')
+    phase = phase.predecessor && phases[phase.predecessor]
+  }
+  return result
+}
 
 /**
  * Update message in Elasticsearch.
@@ -15,11 +35,29 @@ const client = helper.getESClient()
  */
 async function update (message) {
   // it will do full or partial update
-  await client.update({
+  // `currentPhase` is automatically set to the last phase object with isActive ==  true
+  // `endDate` is calculated with Optimistic Concurrency Control: https://www.elastic.co/guide/en/elasticsearch/guide/master/optimistic-concurrency-control.html
+  const doc = message.payload
+  const request = {
     index: config.get('esConfig.ES_INDEX'),
     type: config.get('esConfig.ES_TYPE'),
-    id: message.payload.id,
-    body: { doc: message.payload }
+    id: message.payload.id
+  }
+  if (doc.phases) {
+    doc.currentPhase = message.payload.phases.slice().reverse().find(phase => phase.isActive)
+    let startDate = doc.startDate
+    if (!startDate) {
+      const challenge = await client.get(request)
+      request.version = challenge.version
+      startDate = challenge._source.startDate
+    }
+    doc.endDate = getPhaseEndDate(doc.phases[doc.phases.length - 1], doc, startDate).format()
+  }
+  await client.update({
+    ...request,
+    body: {
+      doc: doc
+    }
   })
 }
 
@@ -35,6 +73,7 @@ update.schema = {
       track: Joi.string(),
       name: Joi.string(),
       description: Joi.string(),
+      privateDescription: Joi.string(),
       challengeSettings: Joi.array().items(Joi.object().keys({
         type: Joi.string().uuid().required(),
         value: Joi.string().required()
@@ -63,6 +102,7 @@ update.schema = {
       forumId: Joi.number().integer().positive(),
       legacyId: Joi.number().integer().positive().allow(null),
       status: Joi.string(),
+      startDate: Joi.date(),
       attachments: Joi.array().items(Joi.object().keys({
         id: Joi.string().uuid().required(),
         fileSize: Joi.number().integer().positive().required(),
