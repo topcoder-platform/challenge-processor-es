@@ -6,6 +6,7 @@
 process.env.NODE_ENV = 'test'
 
 const _ = require('lodash')
+const uuid = require('uuid/v4')
 const config = require('config')
 const expect = require('chai').expect
 const ProcessorService = require('../../src/services/ProcessorService')
@@ -15,7 +16,11 @@ const {
   challengeId,
   notFoundId,
   challengeUpdatedMessage,
-  challengePartiallyUpdatedMessage
+  challengePartiallyUpdatedMessage,
+  createResourceMessage,
+  removeResourceMessage,
+  createSubmissionMessage,
+  removeSubmissionMessage
 } = require('../common/testData')
 
 const client = helper.getESClient()
@@ -27,7 +32,8 @@ describe('TC Challenge Processor Unit Tests', () => {
       index: config.get('esConfig.ES_INDEX'),
       type: config.get('esConfig.ES_TYPE'),
       id: challengeUpdatedMessage.payload.id,
-      body: challengeUpdatedMessage.payload
+      body: challengeUpdatedMessage.payload,
+      refresh: 'true'
     })
   })
 
@@ -36,7 +42,8 @@ describe('TC Challenge Processor Unit Tests', () => {
     await client.delete({
       index: config.get('esConfig.ES_INDEX'),
       type: config.get('esConfig.ES_TYPE'),
-      id: challengeUpdatedMessage.payload.id
+      id: challengeUpdatedMessage.payload.id,
+      refresh: 'true'
     })
   })
 
@@ -249,7 +256,13 @@ describe('TC Challenge Processor Unit Tests', () => {
 
   it('update challenge message - invalid parameters, invalid phase duration', async () => {
     const message = _.cloneDeep(challengeUpdatedMessage)
-    message.payload.phases[0].duration = 0
+    message.payload.phases = [{
+      id: uuid(),
+      name: 'review',
+      description: 'review phase 2',
+      isActive: true,
+      duration: 0
+    }]
     try {
       await ProcessorService.update(message)
     } catch (err) {
@@ -331,6 +344,105 @@ describe('TC Challenge Processor Unit Tests', () => {
       expect(err).to.exist // eslint-disable-line
       expect(err.name).to.equal('ValidationError')
       const msg = '"updatedBy" is required'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('create resource message', async () => {
+    await ProcessorService.createResource(createResourceMessage)
+    const data = await testHelper.getESData(challengeId)
+    expect(data.numOfRegistrants).to.equal(1)
+  })
+
+  it('create resource message - invalid parameters, missing challengeId', async () => {
+    const message = _.cloneDeep(createResourceMessage)
+    delete message.payload.challengeId
+    try {
+      await ProcessorService.createResource(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"challengeId" is required'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('create resource message - invalid parameters, missing roleId', async () => {
+    const message = _.cloneDeep(createResourceMessage)
+    delete message.payload.roleId
+    try {
+      await ProcessorService.createResource(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"roleId" is required'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('remove resource message', async () => {
+    await ProcessorService.removeResource(removeResourceMessage)
+    const data = await testHelper.getESData(challengeId)
+    expect(data.numOfRegistrants).to.equal(0)
+  })
+
+  it('remove resource message - invalid parameters, invalid challengeId', async () => {
+    const message = _.cloneDeep(removeResourceMessage)
+    message.payload.challengeId = [123]
+    try {
+      await ProcessorService.removeResource(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"challengeId" must be a string'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('create submission message', async () => {
+    await ProcessorService.createSubmission(createSubmissionMessage)
+    const data = await testHelper.getESData(challengeId)
+    expect(data.numOfSubmissions).to.equal(1)
+  })
+
+  it('create submission message - invalid parameters, missing challengeId', async () => {
+    const message = _.cloneDeep(createSubmissionMessage)
+    delete message.payload.challengeId
+    try {
+      await ProcessorService.createSubmission(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"challengeId" is required'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('remove submission message', async () => {
+    await ProcessorService.removeSubmission(removeSubmissionMessage)
+    const data = await testHelper.getESData(challengeId)
+    expect(data.numOfSubmissions).to.equal(0)
+  })
+
+  it('remove submission message - invalid parameters, invalid challengeId', async () => {
+    const message = _.cloneDeep(removeSubmissionMessage)
+    message.payload.challengeId = [123]
+    try {
+      await ProcessorService.removeSubmission(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"challengeId" must be a string'
       expect(err.message.indexOf(msg) >= 0).to.equal(true)
       return
     }

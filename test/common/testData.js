@@ -8,6 +8,8 @@ const challengeId = uuid()
 
 const notFoundId = uuid()
 
+const roleId = '173803d3-019e-4033-b1cf-d7205c7f773a'
+
 const challengeUpdatedMessage = {
   topic: 'challenge.notification.update',
   originator: 'challenge-api',
@@ -21,13 +23,6 @@ const challengeUpdatedMessage = {
     description: 'some description 2',
     challengeSettings: [{ type: uuid(), value: 'value 2' }],
     timelineTemplateId: uuid(),
-    phases: [{
-      id: uuid(),
-      name: 'review',
-      description: 'review phase 2',
-      isActive: true,
-      duration: 20000
-    }],
     prizeSets: [{
       type: 'Challenge prizes',
       description: 'prize desc 2',
@@ -82,9 +77,60 @@ const challengePartiallyUpdatedMessage = {
   }
 }
 
+const createResourceMessage = {
+  topic: 'challenge.action.resource.create',
+  originator: 'resource-api',
+  timestamp: '2019-02-03T01:01:00',
+  'mime-type': 'application/json',
+  payload: {
+    id: uuid(),
+    challengeId,
+    memberId: '123456',
+    memberHandle: 'test',
+    roleId
+  }
+}
+
+const removeResourceMessage = {
+  topic: 'challenge.action.resource.delete',
+  originator: 'resource-api',
+  timestamp: '2019-02-03T01:01:00',
+  'mime-type': 'application/json',
+  payload: createResourceMessage.payload
+}
+
+const createSubmissionMessage = {
+  topic: 'submission.notification.create',
+  originator: 'submission-api',
+  timestamp: '2019-02-03T01:01:00',
+  'mime-type': 'application/json',
+  payload: {
+    resource: 'submission',
+    id: uuid(),
+    type: 'ContestSubmission',
+    url: 'http://test.com/submission/111',
+    memberId: '123456',
+    challengeId,
+    created: '2019-02-03T01:01:00',
+    createdBy: 'test'
+  }
+}
+
+const removeSubmissionMessage = {
+  topic: 'submission.notification.delete',
+  originator: 'submission-api',
+  timestamp: '2019-02-03T01:01:00',
+  'mime-type': 'application/json',
+  payload: createSubmissionMessage.payload
+}
+
 module.exports = {
   challengeId,
   notFoundId,
   challengeUpdatedMessage,
-  challengePartiallyUpdatedMessage
+  challengePartiallyUpdatedMessage,
+  createResourceMessage,
+  removeResourceMessage,
+  createSubmissionMessage,
+  removeSubmissionMessage
 }

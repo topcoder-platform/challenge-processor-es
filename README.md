@@ -22,6 +22,11 @@ The following parameters can be set in config files or in env variables:
     if not provided, then SSL connection is not used, direct insecure connection is used;
     if provided, it can be either path to private key file or private key content
 - UPDATE_DATA_TOPIC: update data Kafka topic, default value is 'challenge.notification.update'
+- CREATE_RESOURCE_TOPIC: create resource Kafka topic, default value is 'challenge.action.resource.create'
+- DELETE_RESOURCE_TOPIC: delete resource Kafka topic, default value is 'challenge.action.resource.delete'
+- CREATE_SUBMISSION_TOPIC: create submission Kafka topic, default value is 'submission.notification.create'
+- DELETE_SUBMISSION_TOPIC: delete submission Kafka topic, default value is 'submission.notification.delete'
+- REGISTRANT_ROLE_ID: challenge registrant role id, if not provided then any role is considered as registrant
 - esConfig: config object for Elasticsearch
 
 Refer to `esConfig` variable in `config/default.js` for ES related configuration.
@@ -43,17 +48,22 @@ Config for tests are at `config/test.js`, it overrides some default config.
 - use another terminal, go to same directory, start the Kafka server:
   `bin/kafka-server-start.sh config/server.properties`
 - note that the zookeeper server is at localhost:2181, and Kafka server is at localhost:9092
-- use another terminal, go to same directory, create update topic:
+- use another terminal, go to same directory, create topics:
   `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.notification.update`
-- verify that the topic is created:
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.resource.create`
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.resource.delete`
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic submission.notification.create`
+  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic submission.notification.delete`
+- verify that the topics are created:
   `bin/kafka-topics.sh --list --zookeeper localhost:2181`,
-  it should list out the created topic
+  it should list out the created topics
 - run the producer and then write some message into the console to send to the `challenge.notification.update` topic:
   `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
   in the console, write message, one message per line:
   `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
 - optionally, use another terminal, go to same directory, start a consumer to view the messages:
   `bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.notification.update --from-beginning`
+- send/view messages to/from other topics are similar
 
 ## Local Elasticsearch setup
 
@@ -133,7 +143,7 @@ npm run cov-e2e
 - Before testing update message, we need to create a record in ES. If you are using the ES from docker-es and using default configuration variables, use the below command to create a record in ES through curl.
 
 ```bash
-curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"name\":\"review\",\"isActive\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
+curl -H "Content-Type: application/json" -X POST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"name\":\"review\",\"isActive\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
 ```
 
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the created data, you will see the data are properly created:
@@ -305,6 +315,58 @@ info: Done!
 
   `[ [ [ } } }`
 - then in the app console, you will see error messages
+
+- start kafka-console-producer to write messages to `challenge.action.resource.create` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.resource.create`
+
+- write message to create resource:
+  `{ "topic": "challenge.action.resource.create", "originator": "resource-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "45415132-79fa-4d13-a9ac-71f50020dc10", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "memberHandle": "test", "roleId": "45415132-79fa-4d13-a9ac-71f50020dc12" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+...
+    "numOfRegistrants": 1
+...
+```
+
+- start kafka-console-producer to write messages to `challenge.action.resource.delete` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.resource.delete`
+
+- write message to delete resource:
+  `{ "topic": "challenge.action.resource.delete", "originator": "resource-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "45415132-79fa-4d13-a9ac-71f50020dc10", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "memberHandle": "test", "roleId": "45415132-79fa-4d13-a9ac-71f50020dc12" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+...
+    "numOfRegistrants": 0
+...
+```
+
+- start kafka-console-producer to write messages to `submission.notification.create` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.create`
+
+- write message to create submission:
+  `{ "topic": "submission.notification.create", "originator": "submission-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "45415132-79fa-4d13-a9ac-71f50020dc18", "type": "ContestSubmission", "url": "http://test.com/123", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "created": "2019-02-03T01:01:00", "createdBy": "test" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+...
+    "numOfSubmissions": 1
+...
+```
+
+- start kafka-console-producer to write messages to `submission.notification.delete` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.delete`
+
+- write message to delete submission:
+  `{ "topic": "submission.notification.delete", "originator": "submission-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "45415132-79fa-4d13-a9ac-71f50020dc18", "type": "ContestSubmission", "url": "http://test.com/123", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "created": "2019-02-03T01:01:00", "createdBy": "test" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+...
+    "numOfSubmissions": 0
+...
+```
 
 - to test the health check API, run `export PORT=5000`, start the processor, then browse `http://localhost:5000/health` in a browser,
   and you will see result `{"checksRun":1}`

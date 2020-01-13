@@ -53,6 +53,7 @@ prepare(function (done) {
       }
     })
     .delete(`_doc/${challengeId}`)
+    .query(true)
     .reply(200)
     .get(() => true)
     .query(true)
