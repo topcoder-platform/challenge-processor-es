@@ -11,22 +11,23 @@ const moment = require('moment')
 const client = helper.getESClient()
 
 /**
- * Get the end date of a challenge phase
- * @param {Object} phase the phase object
- * @param {Object} challenge the challenge object
+ * Get the end date of a challenge
+ * @param {Array} phases the challenge phases
  * @param {Object} startDate the challenge start date to use as a starting point
+ * @returns {String} the challenge end date string
  */
-function getPhaseEndDate (phase, challenge, startDate) {
-  const phases = challenge.phases.reduce((obj, elem) => {
+function getChallengeEndDate (phases, startDate) {
+  const map = phases.reduce((obj, elem) => {
     obj[elem.id] = elem
     return obj
   }, {})
-  let result = moment(startDate)
+  const result = moment(startDate)
+  let phase = phases[phases.length - 1]
   while (phase) {
-    result.add(phase.duration, 'hours')
-    phase = phase.predecessor && phases[phase.predecessor]
+    result.add(phase.duration || 0, 'seconds')
+    phase = phase.predecessor && map[phase.predecessor]
   }
-  return result
+  return result.toDate().toISOString()
 }
 
 /**
@@ -35,23 +36,26 @@ function getPhaseEndDate (phase, challenge, startDate) {
  */
 async function update (message) {
   // it will do full or partial update
-  // `currentPhase` is automatically set to the last phase object with isActive ==  true
-  // `endDate` is calculated with Optimistic Concurrency Control: https://www.elastic.co/guide/en/elasticsearch/guide/master/optimistic-concurrency-control.html
+  // `currentPhase` is automatically set to the last phase object with isOpen == true
+  // `endDate` is calculated with Optimistic Concurrency Control:
+  // https://www.elastic.co/guide/en/elasticsearch/guide/master/optimistic-concurrency-control.html
   const doc = message.payload
   const request = {
     index: config.get('esConfig.ES_INDEX'),
     type: config.get('esConfig.ES_TYPE'),
     id: message.payload.id
   }
-  if (doc.phases) {
-    doc.currentPhase = message.payload.phases.slice().reverse().find(phase => phase.isActive)
+  if (doc.phases && doc.phases.length > 0) {
+    doc.currentPhase = message.payload.phases.slice().reverse().find(phase => phase.isOpen)
     let startDate = doc.startDate
     if (!startDate) {
       const challenge = await client.get(request)
       request.version = challenge.version
       startDate = challenge._source.startDate
     }
-    doc.endDate = getPhaseEndDate(doc.phases[doc.phases.length - 1], doc, startDate).format()
+    if (startDate) {
+      doc.endDate = getChallengeEndDate(doc.phases, startDate)
+    }
   }
   await client.update({
     ...request,
@@ -82,11 +86,14 @@ update.schema = {
       timelineTemplateId: Joi.string().uuid(),
       phases: Joi.array().items(Joi.object().keys({
         id: Joi.string().uuid().required(),
-        name: Joi.string().required(),
-        description: Joi.string(),
+        phaseId: Joi.string().uuid().required(),
         predecessor: Joi.string().uuid(),
-        isActive: Joi.boolean().required(),
-        duration: Joi.number().positive().required()
+        isOpen: Joi.boolean(),
+        duration: Joi.number().positive().required(),
+        scheduledStartDate: Joi.date(),
+        scheduledEndDate: Joi.date(),
+        actualStartDate: Joi.date(),
+        actualEndDate: Joi.date()
       })),
       prizeSets: Joi.array().items(Joi.object().keys({
         type: Joi.string().required(),

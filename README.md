@@ -143,7 +143,7 @@ npm run cov-e2e
 - Before testing update message, we need to create a record in ES. If you are using the ES from docker-es and using default configuration variables, use the below command to create a record in ES through curl.
 
 ```bash
-curl -H "Content-Type: application/json" -X POST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"name\":\"review\",\"isActive\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
+curl -H "Content-Type: application/json" -X POST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"phaseId\":\"8e17090c-465b-4c17-b6d9-dfa16300b2ba\",\"isOpen\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
 ```
 
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the created data, you will see the data are properly created:
@@ -160,8 +160,8 @@ info: {
     "phases": [
         {
             "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "name": "review",
-            "isActive": true,
+            "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b2ba",
+            "isOpen": true,
             "duration": 10000
         }
     ],
@@ -183,7 +183,7 @@ info: {
     "projectId": 123,
     "forumId": 456,
     "status": "Active",
-    "created": "2018-01-01T16:00:00.000Z",
+    "created": "2018-01-02T00:00:00",
     "createdBy": "admin"
 }
 info: Done!
@@ -207,8 +207,8 @@ info: {
     "phases": [
         {
             "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "name": "review",
-            "isActive": true,
+            "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b2ba",
+            "isOpen": true,
             "duration": 10000
         }
     ],
@@ -230,7 +230,7 @@ info: {
     "projectId": 123,
     "forumId": 456,
     "status": "Active",
-    "created": "2018-01-01T16:00:00.000Z",
+    "created": "2018-01-02T00:00:00",
     "createdBy": "admin",
     "updatedBy": "admin",
     "groups": [
@@ -242,7 +242,7 @@ info: {
 info: Done!
 ```
 - write message to update data:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "name": "review", "isActive": true, "duration": 20 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "attachments": [{ "id": "8e17091c-466b-4c17-b6d9-dfa16300b234", "fileSize": 88, "fileName": "t.txt", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c" }], "groups": ["g1", "g2"], "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013", "isOpen": true, "duration": 2000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "groups": ["g2"], "startDate": "2019-07-17T00:00:00", "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
 - run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
@@ -256,10 +256,10 @@ info: {
     "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
     "phases": [
         {
-            "duration": 20,
-            "name": "review",
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "isActive": true
+            "duration": 2000,
+            "isOpen": true,
+            "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013",
+            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012"
         }
     ],
     "prizeSets": [
@@ -281,29 +281,28 @@ info: {
     "projectId": 12,
     "forumId": 45,
     "status": "Active",
-    "created": "2018-01-01T16:00:00.000Z",
+    "created": "2018-01-02T00:00:00",
     "createdBy": "admin",
     "updatedBy": "user",
     "groups": [
-        "g1",
         "g2"
     ],
     "updated": "2019-02-16T16:00:00.000Z",
-    "attachments": [
-        {
-            "fileName": "t.txt",
-            "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c",
-            "fileSize": 88,
-            "id": "8e17091c-466b-4c17-b6d9-dfa16300b234"
-        }
-    ],
+    "endDate": "2019-07-16T16:33:20.000Z",
     "challengeSettings": [
         {
             "type": "2d88c598-70f0-4054-8a45-7da38d0ca424",
             "value": "ab"
         }
     ],
-    "legacyId": 55
+    "currentPhase": {
+        "duration": 2000,
+        "isOpen": true,
+        "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013",
+        "id": "8e17090c-465b-4c17-b6d9-dfa16300b012"
+    },
+    "legacyId": 55,
+    "startDate": "2019-07-16T16:00:00.000Z"
 }
 info: Done!
 ```

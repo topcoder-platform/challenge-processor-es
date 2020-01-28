@@ -10,6 +10,10 @@ const notFoundId = uuid()
 
 const roleId = '173803d3-019e-4033-b1cf-d7205c7f773a'
 
+const phase1Id = uuid()
+
+const phase2Id = uuid()
+
 const challengeUpdatedMessage = {
   topic: 'challenge.notification.update',
   originator: 'challenge-api',
@@ -23,6 +27,26 @@ const challengeUpdatedMessage = {
     description: 'some description 2',
     challengeSettings: [{ type: uuid(), value: 'value 2' }],
     timelineTemplateId: uuid(),
+    phases: [{
+      id: phase1Id,
+      phaseId: uuid(),
+      isOpen: true,
+      duration: 100,
+      scheduledStartDate: new Date(),
+      scheduledEndDate: new Date(),
+      actualStartDate: new Date(),
+      actualEndDate: new Date()
+    }, {
+      id: phase2Id,
+      phaseId: uuid(),
+      predecessor: phase1Id,
+      isOpen: true,
+      duration: 200,
+      scheduledStartDate: new Date(),
+      scheduledEndDate: new Date(),
+      actualStartDate: new Date(),
+      actualEndDate: new Date()
+    }],
     prizeSets: [{
       type: 'Challenge prizes',
       description: 'prize desc 2',
@@ -45,6 +69,7 @@ const challengeUpdatedMessage = {
       challengeId
     }],
     groups: ['group1', 'group3'],
+    startDate: new Date(),
     created: '2019-02-03T00:00:00',
     createdBy: 'admin',
     updated: '2019-02-04T01:01:00',

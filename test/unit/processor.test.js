@@ -50,16 +50,38 @@ describe('TC Challenge Processor Unit Tests', () => {
   it('update challenge message', async () => {
     await ProcessorService.update(challengeUpdatedMessage)
     const data = await testHelper.getESData(challengeId)
-    // Joi re-formats dates, so ignore comparing date fields
-    testHelper.expectObj(data, challengeUpdatedMessage.payload, ['created', 'updated'])
+    testHelper.expectObj(data, challengeUpdatedMessage.payload,
+      ['created', 'updated', 'currentPhase', 'startDate', 'endDate', 'phases'])
+    expect(new Date(data.created).getTime()).to.equal(new Date(challengeUpdatedMessage.payload.created).getTime())
+    expect(new Date(data.updated).getTime()).to.equal(new Date(challengeUpdatedMessage.payload.updated).getTime())
+    expect(new Date(data.startDate).getTime()).to.equal(new Date(challengeUpdatedMessage.payload.startDate).getTime())
+    expect(data.currentPhase).to.exist // eslint-disable-line
+    testHelper.expectSamePhase(data.currentPhase, challengeUpdatedMessage.payload.phases[1])
+    expect(data.phases.length).to.equal(challengeUpdatedMessage.payload.phases.length)
+    for (let i = 0; i < data.phases.length; i += 1) {
+      testHelper.expectSamePhase(data.phases[i], challengeUpdatedMessage.payload.phases[i])
+    }
+    expect(data.endDate).to.exist // eslint-disable-line
+    expect(new Date(data.endDate).getTime() - new Date(challengeUpdatedMessage.payload.startDate).getTime()).to.equal(300000)
   })
 
   it('partially update challenge message', async () => {
     await ProcessorService.update(challengePartiallyUpdatedMessage)
     const data = await testHelper.getESData(challengeId)
     const expectedData = _.assignIn({}, challengeUpdatedMessage.payload, challengePartiallyUpdatedMessage.payload)
-    // Joi re-formats dates, so ignore comparing date fields
-    testHelper.expectObj(data, expectedData, ['created', 'updated'])
+    testHelper.expectObj(data, expectedData,
+      ['created', 'updated', 'currentPhase', 'startDate', 'endDate', 'phases'])
+    expect(new Date(data.created).getTime()).to.equal(new Date(expectedData.created).getTime())
+    expect(new Date(data.updated).getTime()).to.equal(new Date(expectedData.updated).getTime())
+    expect(new Date(data.startDate).getTime()).to.equal(new Date(expectedData.startDate).getTime())
+    expect(data.currentPhase).to.exist // eslint-disable-line
+    testHelper.expectSamePhase(data.currentPhase, expectedData.phases[1])
+    expect(data.phases.length).to.equal(expectedData.phases.length)
+    for (let i = 0; i < data.phases.length; i += 1) {
+      testHelper.expectSamePhase(data.phases[i], expectedData.phases[i])
+    }
+    expect(data.endDate).to.exist // eslint-disable-line
+    expect(new Date(data.endDate).getTime() - new Date(expectedData.startDate).getTime()).to.equal(300000)
   })
 
   it('update challenge message - not found', async () => {
@@ -258,9 +280,8 @@ describe('TC Challenge Processor Unit Tests', () => {
     const message = _.cloneDeep(challengeUpdatedMessage)
     message.payload.phases = [{
       id: uuid(),
-      name: 'review',
-      description: 'review phase 2',
-      isActive: true,
+      phaseId: uuid(),
+      isOpen: true,
       duration: 0
     }]
     try {
