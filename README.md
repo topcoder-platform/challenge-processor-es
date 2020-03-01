@@ -1,11 +1,30 @@
 # Topcoder - Challenge Elasticsearch Processor
 
-## Dependencies
+This microservice processes kafka events related to challenges and updates data in ElasticSearch
 
-- nodejs https://nodejs.org/en/ (v8+)
-- Kafka
-- ElasticSearch
-- Docker, Docker Compose
+### Development deployment status
+[![CircleCI](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/develop.svg?style=svg)](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/develop)
+
+### Production deployment status
+[![CircleCI](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/master.svg?style=svg)](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/master)
+  
+## Intended use
+
+- Processor for updating challenge data in ES  
+
+## Related repos 
+-  [Challenge API](https://github.com/topcoder-platform/challenge-api)
+-  [Legacy Processor](https://github.com/topcoder-platform/legacy-challenge-processor) - Moves data from DynamoDB back to Informix
+-  [Legacy Migration Script](https://github.com/topcoder-platform/legacy-challenge-migration-script) - Moves data from Informix to DynamoDB
+-  [Frontend App](https://github.com/topcoder-platform/challenge-engine-ui)
+  
+## Prerequisites
+
+-  [NodeJS](https://nodejs.org/en/) (v8+)
+-  [Elasticsearch v6](https://www.elastic.co/)
+-  [Kafka](https://kafka.apache.org/)
+-  [Docker](https://www.docker.com/)
+-  [Docker Compose](https://docs.docker.com/compose/)
 
 ## Configuration
 
@@ -16,11 +35,11 @@ The following parameters can be set in config files or in env variables:
 - KAFKA_URL: comma separated Kafka hosts; default value: 'localhost:9092'
 - KAFKA_GROUP_ID: the Kafka group id; default value: 'challenge-processor-es'
 - KAFKA_CLIENT_CERT: Kafka connection certificate, optional; default value is undefined;
-    if not provided, then SSL connection is not used, direct insecure connection is used;
-    if provided, it can be either path to certificate file or certificate content
+if not provided, then SSL connection is not used, direct insecure connection is used;
+if provided, it can be either path to certificate file or certificate content
 - KAFKA_CLIENT_CERT_KEY: Kafka connection private key, optional; default value is undefined;
-    if not provided, then SSL connection is not used, direct insecure connection is used;
-    if provided, it can be either path to private key file or private key content
+if not provided, then SSL connection is not used, direct insecure connection is used;
+if provided, it can be either path to private key file or private key content
 - UPDATE_DATA_TOPIC: update data Kafka topic, default value is 'challenge.notification.update'
 - CREATE_RESOURCE_TOPIC: create resource Kafka topic, default value is 'challenge.action.resource.create'
 - DELETE_RESOURCE_TOPIC: delete resource Kafka topic, default value is 'challenge.action.resource.delete'
@@ -30,343 +49,143 @@ The following parameters can be set in config files or in env variables:
 - esConfig: config object for Elasticsearch
 
 Refer to `esConfig` variable in `config/default.js` for ES related configuration.
-
 Also note that there is a `/health` endpoint that checks for the health of the app. This sets up an expressjs server and listens on the environment variable `PORT`. It's not part of the configuration file and needs to be passed as an environment variable
 
 Config for tests are at `config/test.js`, it overrides some default config.
 
+## Available commands
+1. install dependencies `npm i`
+2. run code lint check `npm run lint`, running `npm run lint:fix` can fix some lint errors if any
+3. initialize Elasticsearch, create configured Elasticsearch index if not present: `npm run init-es`
+4. or to re-create the index: `npm run init-es force`
+5. start processor app `npm start`
 
-## Local Kafka setup
+  
+## Local Deployment
 
-- `http://kafka.apache.org/quickstart` contains details to setup and manage Kafka server,
-  below provides details to setup Kafka server in Mac, Windows will use bat commands in bin/windows instead
+### Foreman Setup
+To install foreman follow this [link](https://theforeman.org/manuals/1.24/#3.InstallingForeman)
+To know how to use foreman follow this [link](https://theforeman.org/manuals/1.24/#2.Quickstart)
+
+### Local Kafka setup
+
+-  `http://kafka.apache.org/quickstart` contains details to setup and manage Kafka server,
+below provides details to setup Kafka server in Mac, Windows will use bat commands in bin/windows instead
+
 - download kafka at `https://www.apache.org/dyn/closer.cgi?path=/kafka/1.1.0/kafka_2.11-1.1.0.tgz`
+
 - extract out the doanlowded tgz file
 - go to extracted directory kafka_2.11-0.11.0.1
 - start ZooKeeper server:
-  `bin/zookeeper-server-start.sh config/zookeeper.properties`
+`bin/zookeeper-server-start.sh config/zookeeper.properties`
 - use another terminal, go to same directory, start the Kafka server:
-  `bin/kafka-server-start.sh config/server.properties`
+`bin/kafka-server-start.sh config/server.properties`
 - note that the zookeeper server is at localhost:2181, and Kafka server is at localhost:9092
 - use another terminal, go to same directory, create topics:
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.notification.update`
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.resource.create`
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.resource.delete`
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic submission.notification.create`
-  `bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic submission.notification.delete`
+`bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.notification.update`
+
+`bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.resource.create`
+
+`bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic challenge.action.resource.delete`
+
+`bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic submission.notification.create`
+
+`bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic submission.notification.delete`
+
 - verify that the topics are created:
-  `bin/kafka-topics.sh --list --zookeeper localhost:2181`,
-  it should list out the created topics
+
+`bin/kafka-topics.sh --list --zookeeper localhost:2181`,
+
+it should list out the created topics
 - run the producer and then write some message into the console to send to the `challenge.notification.update` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
-  in the console, write message, one message per line:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+
+`bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
+
+in the console, write message, one message per line:
+
+`{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+
 - optionally, use another terminal, go to same directory, start a consumer to view the messages:
-  `bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.notification.update --from-beginning`
+
+`bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic challenge.notification.update --from-beginning`
+
 - send/view messages to/from other topics are similar
 
-## Local Elasticsearch setup
-
+### Local Elasticsearch setup
 - in the `docker-es` folder, run `docker-compose up`
 
-## Local deployment
-
+### Local deployment without Docker
 - install dependencies `npm i`
 - run code lint check `npm run lint`, running `npm run lint:fix` can fix some lint errors if any
 - initialize Elasticsearch, create configured Elasticsearch index if not present: `npm run init-es`
 - or to re-create the index: `npm run init-es force`
 - start processor app `npm start`
 
-## Local Deployment with Docker
+### Local Deployment with Docker
 
 To run the Challenge ES Processor using docker, follow the below steps
-
 1. Navigate to the directory `docker`
-
 2. Rename the file `sample.api.env` to `api.env`
-
 3. Set the required AWS credentials in the file `api.env`
-
 4. Once that is done, run the following command
-
 ```
 docker-compose up
 ```
-
 5. When you are running the application for the first time, It will take some time initially to download the image and install the dependencies
 
-## Unit tests and Integration tests
+ 
+## Production deployment
+
+- TBD
+
+## Running tests Locally
+
+### Configuration
+
+Test configuration is at `config/test.js`. You don't need to change them.
+The following test parameters can be set in config file or in env variables:
+
+- REGISTRANT_ROLE_ID: challenge registrant role id, if not provided then any role is considered as registrant
+- esConfig: config object for Elasticsearch
 
 Integration tests use different index `challenge-test` which is not same as the usual index `challenge`.
 
 Please ensure to create the index `challenge-test` or the index specified in the environment variable `ES_INDEX_TEST` before running the Integration tests. You could re-use the existing scripts to create index but you would need to set the below environment variable
-
 ```
 export ES_INDEX=challenge-test
 ```
-
 Or, you may temporarily modify the esConfig.ES_INDEX in config/default.js to `challenge-test` and run `npm run init-es` to create test index.
 
+### Prepare
+- Start Local services.
+- initialize Elasticsearch.
+- Various config parameters should be properly set.
 
-#### Running unit tests and coverage
+### Running unit tests
 
 To run unit tests alone
-
-```
+```bash
 npm run test
 ```
-
 To run unit tests with coverage report
 
-```
+```bash
 npm run cov
 ```
 
-#### Running integration tests and coverage
-
+### Running integration tests
 To run integration tests alone
-
-```
+```bash
 npm run e2e
 ```
-
 To run integration tests with coverage report
 
-```
+```bash
 npm run cov-e2e
 ```
 
+## Running tests in CI
+- TBD
 
 ## Verification
-
-- start kafka server, start elasticsearch, initialize Elasticsearch, start processor app
-- Before testing update message, we need to create a record in ES. If you are using the ES from docker-es and using default configuration variables, use the below command to create a record in ES through curl.
-
-```bash
-curl -H "Content-Type: application/json" -X POST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"phaseId\":\"8e17090c-465b-4c17-b6d9-dfa16300b2ba\",\"isOpen\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
-```
-
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the created data, you will see the data are properly created:
-
-```bash
-info: Elasticsearch data:
-info: {
-    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
-    "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff",
-    "track": "Code",
-    "name": "test",
-    "description": "desc",
-    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
-    "phases": [
-        {
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b2ba",
-            "isOpen": true,
-            "duration": 10000
-        }
-    ],
-    "prizeSets": [
-        {
-            "type": "prize",
-            "prizes": [
-                {
-                    "type": "winning prize",
-                    "value": 500
-                }
-            ]
-        }
-    ],
-    "reviewType": "code review",
-    "tags": [
-        "code"
-    ],
-    "projectId": 123,
-    "forumId": 456,
-    "status": "Active",
-    "created": "2018-01-02T00:00:00",
-    "createdBy": "admin"
-}
-info: Done!
-```
-- start kafka-console-producer to write messages to `challenge.notification.update` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
-
-- write message to partially update data:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-info: Elasticsearch data:
-info: {
-    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
-    "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff",
-    "track": "Code",
-    "name": "test3",
-    "description": "desc3",
-    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd",
-    "phases": [
-        {
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012",
-            "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b2ba",
-            "isOpen": true,
-            "duration": 10000
-        }
-    ],
-    "prizeSets": [
-        {
-            "type": "prize",
-            "prizes": [
-                {
-                    "type": "winning prize",
-                    "value": 500
-                }
-            ]
-        }
-    ],
-    "reviewType": "code review",
-    "tags": [
-        "code"
-    ],
-    "projectId": 123,
-    "forumId": 456,
-    "status": "Active",
-    "created": "2018-01-02T00:00:00",
-    "createdBy": "admin",
-    "updatedBy": "admin",
-    "groups": [
-        "group2",
-        "group3"
-    ],
-    "updated": "2019-02-16T17:00:00.000Z"
-}
-info: Done!
-```
-- write message to update data:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013", "isOpen": true, "duration": 2000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "groups": ["g2"], "startDate": "2019-07-17T00:00:00", "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-info: Elasticsearch data:
-info: {
-    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
-    "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10",
-    "track": "Code",
-    "name": "test",
-    "description": "a b c",
-    "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa",
-    "phases": [
-        {
-            "duration": 2000,
-            "isOpen": true,
-            "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013",
-            "id": "8e17090c-465b-4c17-b6d9-dfa16300b012"
-        }
-    ],
-    "prizeSets": [
-        {
-            "prizes": [
-                {
-                    "type": "win",
-                    "value": 90
-                }
-            ],
-            "type": "prize"
-        }
-    ],
-    "reviewType": "code",
-    "tags": [
-        "tag1",
-        "tag2"
-    ],
-    "projectId": 12,
-    "forumId": 45,
-    "status": "Active",
-    "created": "2018-01-02T00:00:00",
-    "createdBy": "admin",
-    "updatedBy": "user",
-    "groups": [
-        "g2"
-    ],
-    "updated": "2019-02-16T16:00:00.000Z",
-    "endDate": "2019-07-16T16:33:20.000Z",
-    "challengeSettings": [
-        {
-            "type": "2d88c598-70f0-4054-8a45-7da38d0ca424",
-            "value": "ab"
-        }
-    ],
-    "currentPhase": {
-        "duration": 2000,
-        "isOpen": true,
-        "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013",
-        "id": "8e17090c-465b-4c17-b6d9-dfa16300b012"
-    },
-    "legacyId": 55,
-    "startDate": "2019-07-16T16:00:00.000Z"
-}
-info: Done!
-```
-
-- you may write invalid message like:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "123", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
-
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": ["Code"], "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
-
-  `[ [ [ } } }`
-- then in the app console, you will see error messages
-
-- start kafka-console-producer to write messages to `challenge.action.resource.create` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.resource.create`
-
-- write message to create resource:
-  `{ "topic": "challenge.action.resource.create", "originator": "resource-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "45415132-79fa-4d13-a9ac-71f50020dc10", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "memberHandle": "test", "roleId": "45415132-79fa-4d13-a9ac-71f50020dc12" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-...
-    "numOfRegistrants": 1
-...
-```
-
-- start kafka-console-producer to write messages to `challenge.action.resource.delete` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.resource.delete`
-
-- write message to delete resource:
-  `{ "topic": "challenge.action.resource.delete", "originator": "resource-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "45415132-79fa-4d13-a9ac-71f50020dc10", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "memberHandle": "test", "roleId": "45415132-79fa-4d13-a9ac-71f50020dc12" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-...
-    "numOfRegistrants": 0
-...
-```
-
-- start kafka-console-producer to write messages to `submission.notification.create` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.create`
-
-- write message to create submission:
-  `{ "topic": "submission.notification.create", "originator": "submission-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "45415132-79fa-4d13-a9ac-71f50020dc18", "type": "ContestSubmission", "url": "http://test.com/123", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "created": "2019-02-03T01:01:00", "createdBy": "test" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-...
-    "numOfSubmissions": 1
-...
-```
-
-- start kafka-console-producer to write messages to `submission.notification.delete` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.delete`
-
-- write message to delete submission:
-  `{ "topic": "submission.notification.delete", "originator": "submission-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "45415132-79fa-4d13-a9ac-71f50020dc18", "type": "ContestSubmission", "url": "http://test.com/123", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "created": "2019-02-03T01:01:00", "createdBy": "test" } }`
-- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
-
-```bash
-...
-    "numOfSubmissions": 0
-...
-```
-
-- to test the health check API, run `export PORT=5000`, start the processor, then browse `http://localhost:5000/health` in a browser,
-  and you will see result `{"checksRun":1}`
-
+Refer to the verification document `Verification.md`
