@@ -1,0 +1,18 @@
+{
+  "name": "mock-tc-api",
+  "version": "1.0.0",
+  "description": "Mock TC API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "author": "TCSCODER",
+  "license": "none",
+  "dependencies": {
+    "express": "^4.15.4",
+    "body-parser": "^1.15.1",
+    "cors": "^2.7.1",
+    "config": "^3.0.1",
+    "winston": "^3.1.0"
+  }
+}

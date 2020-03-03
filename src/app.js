@@ -43,11 +43,17 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
       case config.CREATE_RESOURCE_TOPIC:
         await ProcessorService.createResource(messageJSON)
         break
+      case config.UPDATE_RESOURCE_TOPIC:
+        await ProcessorService.updateResource(messageJSON)
+        break
       case config.DELETE_RESOURCE_TOPIC:
         await ProcessorService.removeResource(messageJSON)
         break
       case config.CREATE_SUBMISSION_TOPIC:
         await ProcessorService.createSubmission(messageJSON)
+        break
+      case config.UPDATE_SUBMISSION_TOPIC:
+        await ProcessorService.updateSubmission(messageJSON)
         break
       case config.DELETE_SUBMISSION_TOPIC:
         await ProcessorService.removeSubmission(messageJSON)
@@ -77,8 +83,15 @@ function check () {
 logger.info('Starting kafka consumer')
 consumer
   .init([{
-    subscriptions: [config.UPDATE_DATA_TOPIC, config.CREATE_RESOURCE_TOPIC, config.DELETE_RESOURCE_TOPIC,
-      config.CREATE_SUBMISSION_TOPIC, config.DELETE_SUBMISSION_TOPIC],
+    subscriptions: [
+      config.UPDATE_DATA_TOPIC,
+      config.CREATE_RESOURCE_TOPIC,
+      config.UPDATE_RESOURCE_TOPIC,
+      config.DELETE_RESOURCE_TOPIC,
+      config.CREATE_SUBMISSION_TOPIC,
+      config.UPDATE_SUBMISSION_TOPIC,
+      config.DELETE_SUBMISSION_TOPIC
+    ],
     handler: dataHandler
   }])
   .then(() => {
