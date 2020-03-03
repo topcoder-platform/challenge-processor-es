@@ -81,6 +81,7 @@ describe('TC Challenge Processor Unit Tests', () => {
     }
     expect(data.endDate).to.exist // eslint-disable-line
     expect(new Date(data.endDate).getTime() - new Date(challengeUpdatedMessage.payload.startDate).getTime()).to.equal(300000)
+    expect(testHelper.deepCompareArrays(challengeUpdatedMessage.payload.terms, data.terms), true)
   })
 
   it('partially update challenge message', async () => {
@@ -100,6 +101,97 @@ describe('TC Challenge Processor Unit Tests', () => {
     }
     expect(data.endDate).to.exist // eslint-disable-line
     expect(new Date(data.endDate).getTime() - new Date(expectedData.startDate).getTime()).to.equal(300000)
+    expect(testHelper.deepCompareArrays(challengePartiallyUpdatedMessage.payload.terms, data.terms), true)
+  })
+
+  it('update challenge message - invalid parameters, terms with negative id message', async () => {
+    const message = _.cloneDeep(challengeUpdatedMessage)
+    message.payload.terms[0].id = -20
+    try {
+      await ProcessorService.update(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"id" must be a positive number'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('update challenge message - invalid parameters, terms with invalid aggreeability type message', async () => {
+    const message = _.cloneDeep(challengeUpdatedMessage)
+    message.payload.terms[0].agreeabilityType = 800
+    try {
+      await ProcessorService.update(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"agreeabilityType" must be a string'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('update challenge message - invalid parameters, terms with missing aggreeability type message', async () => {
+    const message = _.cloneDeep(challengeUpdatedMessage)
+    delete message.payload.terms[0].agreeabilityType
+    try {
+      await ProcessorService.update(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"agreeabilityType" is required'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('update challenge message - invalid parameters, terms with invalid title message', async () => {
+    const message = _.cloneDeep(challengeUpdatedMessage)
+    message.payload.terms[0].title = 800
+    try {
+      await ProcessorService.update(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"title" must be a string'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('update challenge message - invalid parameters, terms with invalid url message', async () => {
+    const message = _.cloneDeep(challengeUpdatedMessage)
+    message.payload.terms[0].url = 800
+    try {
+      await ProcessorService.update(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"url" must be a string'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
+  })
+
+  it('update challenge message - invalid parameters, terms with invalid templateId message', async () => {
+    const message = _.cloneDeep(challengeUpdatedMessage)
+    message.payload.terms[0].templateId = 800
+    try {
+      await ProcessorService.update(message)
+    } catch (err) {
+      expect(err).to.exist // eslint-disable-line
+      expect(err.name).to.equal('ValidationError')
+      const msg = '"templateId" must be a string'
+      expect(err.message.indexOf(msg) >= 0).to.equal(true)
+      return
+    }
+    throw new Error('There should be validation error.')
   })
 
   it('update challenge message - not found', async () => {

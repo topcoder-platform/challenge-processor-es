@@ -120,6 +120,13 @@ update.schema = {
         fileName: Joi.string().required(),
         challengeId: Joi.string().uuid().required()
       })).allow(null),
+      terms: Joi.array().items(Joi.object().keys({
+        id: Joi.number().strict(true).integer().positive().required(),
+        agreeabilityType: Joi.string().required(),
+        title: Joi.string(),
+        url: Joi.string().allow(''),
+        templateId: Joi.string()
+      })).allow(null),
       groups: Joi.array().items(Joi.string()).allow(null), // group names
       created: Joi.date(),
       createdBy: Joi.string(), // user handle

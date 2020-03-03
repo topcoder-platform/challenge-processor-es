@@ -1,18 +1,18 @@
 ## Verification
 
-- start kafka server, start elasticsearch, initialize Elasticsearch, start processor app, start mock API
+- start kafka server, start elasticsearch, initialize Elasticsearch, start processor app
 - Before testing update message, we need to create a record in ES. If you are using the ES from docker-es and using default configuration variables, use the below command to create a record in ES through curl.
 
 ```bash
-curl -H "Content-Type: application/json" -X POST "http://localhost:9200/challenge/_doc/7b37a31e-484c-4d1e-aa9f-cfd6656e11d8" -d "{\"id\":\"7b37a31e-484c-4d1e-aa9f-cfd6656e11d8\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"phaseId\":\"8e17090c-465b-4c17-b6d9-dfa16300b2ba\",\"isOpen\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
+curl -H "Content-Type: application/json" -X POST "http://localhost:9200/challenge/_doc/173803d3-019e-4033-b1cf-d7205c7f774c" -d "{\"id\":\"173803d3-019e-4033-b1cf-d7205c7f774c\",\"typeId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0ff\",\"track\":\"Code\",\"name\":\"test\",\"description\":\"desc\",\"timelineTemplateId\":\"8e17090c-465b-4c17-b6d9-dfa16300b0aa\",\"phases\":[{\"id\":\"8e17090c-465b-4c17-b6d9-dfa16300b012\",\"phaseId\":\"8e17090c-465b-4c17-b6d9-dfa16300b2ba\",\"isOpen\":true,\"duration\":10000}],\"prizeSets\":[{\"type\":\"prize\",\"prizes\":[{\"type\":\"winning prize\",\"value\":500}]}],\"reviewType\":\"code review\",\"tags\":[\"code\"],\"projectId\":123,\"forumId\":456,\"status\":\"Active\",\"created\":\"2018-01-02T00:00:00\",\"createdBy\":\"admin\"}"
 ```
 
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the created data, you will see the data are properly created:
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the created data, you will see the data are properly created:
 
 ```bash
 info: Elasticsearch data:
 info: {
-    "id": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8",
+    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
     "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff",
     "track": "Code",
     "name": "test",
@@ -53,13 +53,13 @@ info: Done!
   `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.notification.update`
 
 - write message to partially update data:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the updated data, you will see the data are properly updated:
+  `{"topic":"challenge.notification.update","originator":"challenge-api","timestamp":"2019-02-17T01:00:00","mime-type":"application/json","payload":{"id":"173803d3-019e-4033-b1cf-d7205c7f774c","typeId":"8e17090c-465b-4c17-b6d9-dfa16300b0ff","track":"Code","name":"test3","description":"desc3","timelineTemplateId":"8e17090c-465b-4c17-b6d9-dfa16300b0dd","groups":["group2","group3"],"updated":"2019-02-17T01:00:00","updatedBy":"admin","terms":[{"id":21343,"agreeabilityType":"DocuSignable","title":"Competition Non-Disclosure Agreement","url":"","templateId":"0c5b7081-1fff-4484-a20f-824c97a03b9b"},{"id":20723,"agreeabilityType":"Non-electronically-agreeable","title":"Subcontractor Services Agreement 2009-09-02","url":"http://www.topcoder.com/i/terms/Subcontractor+Services+Agreement+2009-09-02.pdf"}]}}`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
 info: Elasticsearch data:
 info: {
-    "id": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8",
+    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
     "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff",
     "track": "Code",
     "name": "test3",
@@ -98,18 +98,32 @@ info: {
         "group2",
         "group3"
     ],
+    "terms": [
+        {
+            "id": 21343,
+            "agreeabilityType": "DocuSignable",
+            "title": "Competition Non-Disclosure Agreement",
+            "url": "",
+            "templateId": "0c5b7081-1fff-4484-a20f-824c97a03b9b"
+        },
+        {
+            "id": 20723,
+            "agreeabilityType": "Non-electronically-agreeable",
+            "title": "Subcontractor Services Agreement 2009-09-02",
+            "url": "http://www.topcoder.com/i/terms/Subcontractor+Services+Agreement+2009-09-02.pdf"
+        }],
     "updated": "2019-02-16T17:00:00.000Z"
 }
 info: Done!
 ```
 - write message to update data:
-  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10", "track": "Code", "name": "test", "description": "a b c", "challengeSettings": [{ "type": "2d88c598-70f0-4054-8a45-7da38d0ca424", "value": "ab" }], "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0aa", "phases": [{ "id": "8e17090c-465b-4c17-b6d9-dfa16300b012", "phaseId": "8e17090c-465b-4c17-b6d9-dfa16300b013", "isOpen": true, "duration": 2000 }], "prizeSets": [{ "type": "prize", "prizes": [{ "type": "win", "value": 90 }] }], "reviewType": "code", "tags": ["tag1", "tag2"], "projectId": 12, "forumId": 45, "legacyId": 55, "status": "Active", "groups": ["g2"], "startDate": "2019-07-17T00:00:00", "updated": "2019-02-17T00:00:00", "updatedBy": "user" } }`
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the updated data, you will see the data are properly updated:
+  `{"topic":"challenge.notification.update","originator":"challenge-api","timestamp":"2019-02-17T00:00:00","mime-type":"application/json","payload":{"id":"173803d3-019e-4033-b1cf-d7205c7f774c","typeId":"45415132-79fa-4d13-a9ac-71f50020dc10","track":"Code","name":"test","description":"a b c","challengeSettings":[{"type":"2d88c598-70f0-4054-8a45-7da38d0ca424","value":"ab"}],"timelineTemplateId":"8e17090c-465b-4c17-b6d9-dfa16300b0aa","phases":[{"id":"8e17090c-465b-4c17-b6d9-dfa16300b012","phaseId":"8e17090c-465b-4c17-b6d9-dfa16300b013","isOpen":true,"duration":2000}],"prizeSets":[{"type":"prize","prizes":[{"type":"win","value":90}]}],"reviewType":"code","tags":["tag1","tag2"],"projectId":12,"forumId":45,"legacyId":55,"status":"Active","groups":["g2"],"terms":[{"id":21343,"agreeabilityType":"DocuSignable","title":"Competition Non-Disclosure Agreement","url":"","templateId":"0c5b7081-1fff-4484-a20f-824c97a03b9b"}],"startDate":"2019-07-17T00:00:00","updated":"2019-02-17T00:00:00","updatedBy":"user"}}`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
 info: Elasticsearch data:
 info: {
-    "id": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8",
+    "id": "173803d3-019e-4033-b1cf-d7205c7f774c",
     "typeId": "45415132-79fa-4d13-a9ac-71f50020dc10",
     "track": "Code",
     "name": "test",
@@ -156,6 +170,14 @@ info: {
             "value": "ab"
         }
     ],
+    "terms": [
+        {
+            "id": 21343,
+            "agreeabilityType": "DocuSignable",
+            "title": "Competition Non-Disclosure Agreement",
+            "url": "",
+            "templateId": "0c5b7081-1fff-4484-a20f-824c97a03b9b"
+        }],
     "currentPhase": {
         "duration": 2000,
         "isOpen": true,
@@ -168,121 +190,50 @@ info: {
 info: Done!
 ```
 
+- you may write invalid message like:
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "123", "track": "Code", "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+
+  `{ "topic": "challenge.notification.update", "originator": "challenge-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "173803d3-019e-4033-b1cf-d7205c7f774c", "typeId": "8e17090c-465b-4c17-b6d9-dfa16300b0ff", "track": ["Code"], "name": "test3", "description": "desc3", "timelineTemplateId": "8e17090c-465b-4c17-b6d9-dfa16300b0dd", "groups": ["group2", "group3"], "updated": "2019-02-17T01:00:00", "updatedBy": "admin" } }`
+
+  `[ [ [ } } }`
+- then in the app console, you will see error messages
+
 - start kafka-console-producer to write messages to `challenge.action.resource.create` topic:
   `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.resource.create`
 
 - write message to create resource:
-  `{ "topic": "challenge.action.resource.create", "originator": "resources-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "id": "5b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "challengeId": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "memberId": 123456, "memberHandle": "test", "roleId": "8e17090c-465b-4c17-b6d9-dfa16300b9aa" } }`
-
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the updated data, you will see the data are properly updated:
+  `{ "topic": "challenge.action.resource.create", "originator": "resource-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "45415132-79fa-4d13-a9ac-71f50020dc10", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "memberHandle": "test", "roleId": "45415132-79fa-4d13-a9ac-71f50020dc12" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
 ...
-    "numberOfRegistrants": 3
+    "numOfRegistrants": 1
 ...
 ```
 
-- update/remove resource messages are handled similarly
+- start kafka-console-producer to write messages to `challenge.action.resource.delete` topic:
+  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic challenge.action.resource.delete`
+
+- write message to delete resource:
+  `{ "topic": "challenge.action.resource.delete", "originator": "resource-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "id": "45415132-79fa-4d13-a9ac-71f50020dc10", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "memberHandle": "test", "roleId": "45415132-79fa-4d13-a9ac-71f50020dc12" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
+
+```bash
+...
+    "numOfRegistrants": 0
+...
+```
 
 - start kafka-console-producer to write messages to `submission.notification.create` topic:
   `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.create`
 
 - write message to create submission:
-  `{ "topic": "submission.notification.create", "originator": "submissions-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "5b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "type": "Contest Submission", "challengeId": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "memberId": 123456, "created": "2019-02-17T01:00:00", "createdBy": "test" } }`
-
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the updated data, you will see the data are properly updated:
-
-```bash
-...
-    "numberOfRegistrants": 3,
-    "numberOfSubmissions": 2,
-    "submissions": [
-        {
-            "submitter": "handle1",
-            "submitterId": 123,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773a",
-                    "submissionTime": "2020-01-02T12:11:11"
-                }
-            ]
-        },
-        {
-            "submitter": "handle2",
-            "submitterId": 456,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773b",
-                    "submissionTime": "2020-01-02T12:11:22"
-                }
-            ]
-        }
-    ],
-    "numberOfSubmitters": 2,
-    "checkpoints": [
-        {
-            "submitter": "handle3",
-            "submitterId": 789,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773c",
-                    "submissionTime": "2020-01-02T12:11:33"
-                }
-            ]
-        }
-    ],
-    "numberOfCheckpointSubmissions": 1
-...
-```
-
-- start kafka-console-producer to write messages to `submission.notification.update` topic:
-  `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.update`
-
-- write message to update submission:
-  `{ "topic": "submission.notification.update", "originator": "submissions-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "5b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "type": "Contest Submission", "challengeId": "7b37a31e-484c-4d1e-aa9f-cfd6656e11d8", "memberId": 123456 } }`
-
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the updated data, you will see the data are properly updated:
+  `{ "topic": "submission.notification.create", "originator": "submission-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "45415132-79fa-4d13-a9ac-71f50020dc18", "type": "ContestSubmission", "url": "http://test.com/123", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "created": "2019-02-03T01:01:00", "createdBy": "test" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
 ...
-    "numberOfRegistrants": 3,
-    "numberOfSubmissions": 2,
-    "submissions": [
-        {
-            "submitter": "handle1",
-            "submitterId": 123,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773a",
-                    "submissionTime": "2020-01-02T12:11:11"
-                }
-            ]
-        },
-        {
-            "submitter": "handle2",
-            "submitterId": 456,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773b",
-                    "submissionTime": "2020-01-02T12:11:22"
-                }
-            ]
-        }
-    ],
-    "numberOfSubmitters": 2,
-    "checkpoints": [
-        {
-            "submitter": "handle3",
-            "submitterId": 789,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773c",
-                    "submissionTime": "2020-01-02T12:11:33"
-                }
-            ]
-        }
-    ],
-    "numberOfCheckpointSubmissions": 1
+    "numOfSubmissions": 1
 ...
 ```
 
@@ -290,60 +241,14 @@ info: Done!
   `bin/kafka-console-producer.sh --broker-list localhost:9092 --topic submission.notification.delete`
 
 - write message to delete submission:
-  `{ "topic": "submission.notification.delete", "originator": "submissions-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "5b37a31e-484c-4d1e-aa9f-cfd6656e11d8" } }`
-
-- run command `npm run view-data 7b37a31e-484c-4d1e-aa9f-cfd6656e11d8` to view the updated data, you will see the data are properly updated:
+  `{ "topic": "submission.notification.delete", "originator": "submission-api", "timestamp": "2019-02-17T00:00:00", "mime-type": "application/json", "payload": { "resource": "submission", "id": "45415132-79fa-4d13-a9ac-71f50020dc18", "type": "ContestSubmission", "url": "http://test.com/123", "challengeId": "173803d3-019e-4033-b1cf-d7205c7f774c", "memberId": "123456", "created": "2019-02-03T01:01:00", "createdBy": "test" } }`
+- run command `npm run view-data 173803d3-019e-4033-b1cf-d7205c7f774c` to view the updated data, you will see the data are properly updated:
 
 ```bash
 ...
-    "numberOfRegistrants": 3,
-    "numberOfSubmissions": 2,
-    "submissions": [
-        {
-            "submitter": "handle1",
-            "submitterId": 123,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773a",
-                    "submissionTime": "2020-01-02T12:11:11"
-                }
-            ]
-        },
-        {
-            "submitter": "handle2",
-            "submitterId": 456,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773b",
-                    "submissionTime": "2020-01-02T12:11:22"
-                }
-            ]
-        }
-    ],
-    "numberOfSubmitters": 2,
-    "checkpoints": [
-        {
-            "submitter": "handle3",
-            "submitterId": 789,
-            "submissions": [
-                {
-                    "submissionId": "171233d3-019e-4033-b1cf-d7205c7f773c",
-                    "submissionTime": "2020-01-02T12:11:33"
-                }
-            ]
-        }
-    ],
-    "numberOfCheckpointSubmissions": 1
+    "numOfSubmissions": 0
 ...
 ```
-
-- you may write invalid message like:
-  `{ "topic": "submission.notification.delete", "originator": "submissions-api", "timestamp": "abc", "mime-type": "application/json", "payload": { "resource": "submission", "id": 123 } }`
-
-  `{ "topic": "submission.notification.delete", "originator": "submissions-api", "timestamp": "2019-02-17T01:00:00", "mime-type": "application/json", "payload": { } }`
-
-  `[ [ [ } } }`
-- then in the app console, you will see error messages
 
 - to test the health check API, run `export PORT=5000`, start the processor, then browse `http://localhost:5000/health` in a browser,
   and you will see result `{"checksRun":1}`

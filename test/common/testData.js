@@ -73,7 +73,28 @@ const challengeUpdatedMessage = {
     created: '2019-02-03T00:00:00',
     createdBy: 'admin',
     updated: '2019-02-04T01:01:00',
-    updatedBy: 'user'
+    updatedBy: 'user',
+    terms: [
+      {
+        id: 21343,
+        agreeabilityType: 'DocuSignable',
+        title: 'Competition Non-Disclosure Agreement',
+        url: '',
+        templateId: '0c5b7081-1fff-4484-a20f-824c97a03b9b'
+      },
+      {
+        id: 20723,
+        agreeabilityType: 'Non-electronically-agreeable',
+        title: 'Subcontractor Services Agreement 2009-09-02',
+        url: 'http://www.topcoder.com/i/terms/Subcontractor+Services+Agreement+2009-09-02.pdf'
+      },
+      {
+        id: 20645,
+        agreeabilityType: 'Electronically-agreeable',
+        title: '2008 TCO Marathon Match Competition Official Rules',
+        url: 'http://topcoder.com/mm-terms'
+      }
+    ]
   }
 }
 
@@ -98,7 +119,16 @@ const challengePartiallyUpdatedMessage = {
     }],
     groups: ['group4'],
     updated: '2019-01-02T00:00:00',
-    updatedBy: 'user'
+    updatedBy: 'user',
+    terms: [
+      {
+        id: 21343,
+        agreeabilityType: 'DocuSignable',
+        title: 'Competition Non-Disclosure Agreement',
+        url: '',
+        templateId: '0c5b7081-1fff-4484-a20f-824c97a03b9b'
+      }
+    ]
   }
 }
 
