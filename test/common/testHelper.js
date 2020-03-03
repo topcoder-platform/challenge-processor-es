@@ -10,6 +10,17 @@ const expect = require('chai').expect
 const client = helper.getESClient()
 
 /**
+ * function to deeply compare arrays  regardeless of the order
+ *
+ * @param {Array} arr1 The first array to compare
+ * @param {Array} arr2 The second array to compare
+ * @returns {Boolean} The flag indicating whether the arrays have the same content regardless of the order
+ */
+const deepCompareArrays = (arr1, arr2) => {
+  return _(arr1).xorWith(arr2, _.isEqual).isEmpty()
+}
+
+/**
  * Get elastic search data.
  * @param {String} id the Elastic search data id
  * @returns {Object} the elastic search data of id of configured index type in configured index
@@ -54,5 +65,6 @@ function expectSamePhase (phase1, phase2) {
 module.exports = {
   getESData,
   expectObj,
-  expectSamePhase
+  expectSamePhase,
+  deepCompareArrays
 }
