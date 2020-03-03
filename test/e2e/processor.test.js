@@ -1,5 +1,6 @@
 /**
- * The test cases for TC challenge processor using real Elasticsearch.
+ * The E2E test cases for TC challenge processor.
+ * Configured external services are used.
  */
 
 // During tests the node env is set to test
@@ -18,31 +19,48 @@ const {
   challengeUpdatedMessage,
   challengePartiallyUpdatedMessage,
   createResourceMessage,
+  updateResourceMessage,
   removeResourceMessage,
   createSubmissionMessage,
-  removeSubmissionMessage
+  updateSubmissionMessage,
+  removeSubmissionMessage,
+  requiredFields,
+  stringFields,
+  guidFields,
+  dateFields
 } = require('../common/testData')
 
 const client = helper.getESClient()
 
-describe('TC Challenge Processor Tests', () => {
-  // Create record to be used in tests later
+describe('TC Challenge Processor E2E Tests', () => {
   before(async () => {
+    // remove ES record if any
+    try {
+      await client.delete({
+        index: config.get('esConfig.ES_INDEX'),
+        type: config.get('esConfig.ES_TYPE'),
+        id: challengeId,
+        refresh: 'true'
+      })
+    } catch (e) {
+      // ignore
+    }
+    // create ES record
     await client.create({
       index: config.get('esConfig.ES_INDEX'),
       type: config.get('esConfig.ES_TYPE'),
-      id: challengeUpdatedMessage.payload.id,
+      id: challengeId,
       body: challengeUpdatedMessage.payload,
       refresh: 'true'
     })
   })
 
-  // Remove the record after running tests
   after(async () => {
+    // Remove the record after running tests
     await client.delete({
       index: config.get('esConfig.ES_INDEX'),
       type: config.get('esConfig.ES_TYPE'),
-      id: challengeUpdatedMessage.payload.id,
+      id: challengeId,
       refresh: 'true'
     })
   })
@@ -462,102 +480,163 @@ describe('TC Challenge Processor Tests', () => {
     throw new Error('There should be validation error.')
   })
 
-  it('create resource message', async () => {
-    await ProcessorService.createResource(createResourceMessage)
-    const data = await testHelper.getESData(challengeId)
-    expect(data.numOfRegistrants).to.equal(1)
-  })
+  const resourceOps = ['createResource', 'updateResource', 'removeResource']
+  const resourceMessages = [createResourceMessage, updateResourceMessage, removeResourceMessage]
 
-  it('create resource message - invalid parameters, missing challengeId', async () => {
-    const message = _.cloneDeep(createResourceMessage)
-    delete message.payload.challengeId
-    try {
-      await ProcessorService.createResource(message)
-    } catch (err) {
-      expect(err).to.exist // eslint-disable-line
-      expect(err.name).to.equal('ValidationError')
-      const msg = '"challengeId" is required'
-      expect(err.message.indexOf(msg) >= 0).to.equal(true)
-      return
+  for (let i = 0; i < resourceOps.length; i += 1) {
+    const op = resourceOps[i]
+    const testMessage = resourceMessages[i]
+
+    it(`call ${op} successfully`, async () => {
+      await ProcessorService[op](testMessage)
+      const data = await testHelper.getESData(challengeId)
+      expect(data.numberOfRegistrants).to.equal(3)
+    })
+  }
+
+  const subOps = ['createSubmission', 'updateSubmission', 'removeSubmission']
+  const subMessages = [createSubmissionMessage, updateSubmissionMessage, removeSubmissionMessage]
+
+  for (let i = 0; i < subOps.length; i += 1) {
+    const op = subOps[i]
+    const testMessage = subMessages[i]
+
+    it(`call ${op} successfully`, async () => {
+      await ProcessorService[op](testMessage)
+      const data = await testHelper.getESData(challengeId)
+      expect(data.numberOfSubmissions).to.equal(2)
+      expect(data.numberOfSubmitters).to.equal(2)
+      expect(data.numberOfCheckpointSubmissions).to.equal(1)
+      expect(data.submissions.length).to.equal(2)
+      expect(data.submissions[0].submitterId).to.equal(123)
+      expect(data.submissions[0].submitter).to.equal('handle1')
+      expect(data.submissions[0].submissions.length).to.equal(1)
+      expect(data.submissions[0].submissions[0].submissionId).to.equal('171233d3-019e-4033-b1cf-d7205c7f773a')
+      expect(new Date(data.submissions[0].submissions[0].submissionTime).getTime()).to.equal(
+        new Date('2020-01-02T12:11:11').getTime())
+      expect(data.submissions[1].submitterId).to.equal(456)
+      expect(data.submissions[1].submitter).to.equal('handle2')
+      expect(data.submissions[1].submissions.length).to.equal(1)
+      expect(data.submissions[1].submissions[0].submissionId).to.equal('171233d3-019e-4033-b1cf-d7205c7f773b')
+      expect(new Date(data.submissions[1].submissions[0].submissionTime).getTime()).to.equal(
+        new Date('2020-01-02T12:11:22').getTime())
+      expect(data.checkpoints.length).to.equal(1)
+      expect(data.checkpoints[0].submitterId).to.equal(789)
+      expect(data.checkpoints[0].submitter).to.equal('handle3')
+      expect(data.checkpoints[0].submissions.length).to.equal(1)
+      expect(data.checkpoints[0].submissions[0].submissionId).to.equal('171233d3-019e-4033-b1cf-d7205c7f773c')
+      expect(new Date(data.checkpoints[0].submissions[0].submissionTime).getTime()).to.equal(
+        new Date('2020-01-02T12:11:33').getTime())
+    })
+  }
+
+  const ops = ['createResource', 'updateResource', 'removeResource',
+    'createSubmission', 'updateSubmission', 'removeSubmission']
+  const messages = [createResourceMessage, updateResourceMessage, removeResourceMessage,
+    createSubmissionMessage, updateSubmissionMessage, removeSubmissionMessage]
+
+  for (let i = 0; i < ops.length; i += 1) {
+    const op = ops[i]
+    const testMessage = messages[i]
+
+    if (_.get(testMessage, 'payload.challengeId')) {
+      it(`${op} - not found`, async () => {
+        const message = _.cloneDeep(testMessage)
+        message.payload.challengeId = notFoundId
+        try {
+          await ProcessorService[op](message)
+        } catch (err) {
+          expect(err.message.indexOf('document_missing_exception') >= 0).to.equal(true)
+          return
+        }
+        throw new Error('There should be not found error.')
+      })
     }
-    throw new Error('There should be validation error.')
-  })
 
-  it('create resource message - invalid parameters, missing roleId', async () => {
-    const message = _.cloneDeep(createResourceMessage)
-    delete message.payload.roleId
-    try {
-      await ProcessorService.createResource(message)
-    } catch (err) {
-      expect(err).to.exist // eslint-disable-line
-      expect(err.name).to.equal('ValidationError')
-      const msg = '"roleId" is required'
-      expect(err.message.indexOf(msg) >= 0).to.equal(true)
-      return
+    for (const requiredField of requiredFields) {
+      if (_.get(testMessage, requiredField)) {
+        it(`${op}, missing ${requiredField}`, async () => {
+          let message = _.cloneDeep(testMessage)
+          message = _.omit(message, requiredField)
+          try {
+            await ProcessorService[op](message)
+          } catch (err) {
+            expect(err.name).to.equal('ValidationError')
+            const msg = `"${_.last(requiredField.split('.'))}" is required`
+            expect(err.message.indexOf(msg) >= 0).to.equal(true)
+            return
+          }
+          throw new Error('should not throw error here')
+        })
+      }
     }
-    throw new Error('There should be validation error.')
-  })
 
-  it('remove resource message', async () => {
-    await ProcessorService.removeResource(removeResourceMessage)
-    const data = await testHelper.getESData(challengeId)
-    expect(data.numOfRegistrants).to.equal(0)
-  })
+    for (const stringField of stringFields) {
+      if (_.get(testMessage, stringField)) {
+        it(`${op}, invalid string type field ${stringField}`, async () => {
+          const message = _.cloneDeep(testMessage)
+          _.set(message, stringField, 123)
+          try {
+            await ProcessorService[op](message)
+          } catch (err) {
+            expect(err.name).to.equal('ValidationError')
+            const msg = `"${_.last(stringField.split('.'))}" must be a string`
+            expect(err.message.indexOf(msg) >= 0).to.equal(true)
+            return
+          }
+          throw new Error('should not throw error here')
+        })
 
-  it('remove resource message - invalid parameters, invalid challengeId', async () => {
-    const message = _.cloneDeep(removeResourceMessage)
-    message.payload.challengeId = [123]
-    try {
-      await ProcessorService.removeResource(message)
-    } catch (err) {
-      expect(err).to.exist // eslint-disable-line
-      expect(err.name).to.equal('ValidationError')
-      const msg = '"challengeId" must be a string'
-      expect(err.message.indexOf(msg) >= 0).to.equal(true)
-      return
+        it(`${op}, empty string field ${stringField}`, async () => {
+          const message = _.cloneDeep(testMessage)
+          _.set(message, stringField, '')
+          try {
+            await ProcessorService[op](message)
+          } catch (err) {
+            expect(err.name).to.equal('ValidationError')
+            const msg = `"${_.last(stringField.split('.'))}" is not allowed to be empty`
+            expect(err.message.indexOf(msg) >= 0).to.equal(true)
+            return
+          }
+          throw new Error('should not throw error here')
+        })
+      }
     }
-    throw new Error('There should be validation error.')
-  })
 
-  it('create submission message', async () => {
-    await ProcessorService.createSubmission(createSubmissionMessage)
-    const data = await testHelper.getESData(challengeId)
-    expect(data.numOfSubmissions).to.equal(1)
-  })
-
-  it('create submission message - invalid parameters, missing challengeId', async () => {
-    const message = _.cloneDeep(createSubmissionMessage)
-    delete message.payload.challengeId
-    try {
-      await ProcessorService.createSubmission(message)
-    } catch (err) {
-      expect(err).to.exist // eslint-disable-line
-      expect(err.name).to.equal('ValidationError')
-      const msg = '"challengeId" is required'
-      expect(err.message.indexOf(msg) >= 0).to.equal(true)
-      return
+    for (const dateField of dateFields) {
+      if (_.get(testMessage, dateField)) {
+        it(`${op}, invalid date type field ${dateField}`, async () => {
+          const message = _.cloneDeep(testMessage)
+          _.set(message, dateField, 'abc')
+          try {
+            await ProcessorService[op](message)
+          } catch (err) {
+            expect(err.name).to.equal('ValidationError')
+            const msg = `"${_.last(dateField.split('.'))}" must be a number of milliseconds or valid date string`
+            expect(err.message.indexOf(msg) >= 0).to.equal(true)
+            return
+          }
+          throw new Error('should not throw error here')
+        })
+      }
     }
-    throw new Error('There should be validation error.')
-  })
 
-  it('remove submission message', async () => {
-    await ProcessorService.removeSubmission(removeSubmissionMessage)
-    const data = await testHelper.getESData(challengeId)
-    expect(data.numOfSubmissions).to.equal(0)
-  })
-
-  it('remove submission message - invalid parameters, invalid challengeId', async () => {
-    const message = _.cloneDeep(removeSubmissionMessage)
-    message.payload.challengeId = [123]
-    try {
-      await ProcessorService.removeSubmission(message)
-    } catch (err) {
-      expect(err).to.exist // eslint-disable-line
-      expect(err.name).to.equal('ValidationError')
-      const msg = '"challengeId" must be a string'
-      expect(err.message.indexOf(msg) >= 0).to.equal(true)
-      return
+    for (const guidField of guidFields) {
+      if (_.get(testMessage, guidField)) {
+        it(`${op}, invalid GUID type field ${guidField}`, async () => {
+          const message = _.cloneDeep(testMessage)
+          _.set(message, guidField, '12345')
+          try {
+            await ProcessorService[op](message)
+          } catch (err) {
+            expect(err.name).to.equal('ValidationError')
+            const msg = `"${_.last(guidField.split('.'))}" must be a valid GUID`
+            expect(err.message.indexOf(msg) >= 0).to.equal(true)
+            return
+          }
+          throw new Error('should not throw error here')
+        })
+      }
     }
-    throw new Error('There should be validation error.')
-  })
+  }
 })

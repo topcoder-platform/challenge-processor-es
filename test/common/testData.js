@@ -2,13 +2,13 @@
  * Test data to be used in tests
  */
 
+const _ = require('lodash')
 const uuid = require('uuid/v4')
 
-const challengeId = uuid()
+const challengeId = '7b37a31e-484c-4d1e-aa9f-cfd6656e11d8'
 
+const submissionId = uuid()
 const notFoundId = uuid()
-
-const roleId = '173803d3-019e-4033-b1cf-d7205c7f773a'
 
 const phase1Id = uuid()
 
@@ -134,58 +134,91 @@ const challengePartiallyUpdatedMessage = {
 
 const createResourceMessage = {
   topic: 'challenge.action.resource.create',
-  originator: 'resource-api',
+  originator: 'resources-api',
   timestamp: '2019-02-03T01:01:00',
   'mime-type': 'application/json',
   payload: {
     id: uuid(),
     challengeId,
-    memberId: '123456',
+    memberId: 123456,
     memberHandle: 'test',
-    roleId
+    roleId: uuid()
   }
 }
 
-const removeResourceMessage = {
-  topic: 'challenge.action.resource.delete',
-  originator: 'resource-api',
-  timestamp: '2019-02-03T01:01:00',
-  'mime-type': 'application/json',
-  payload: createResourceMessage.payload
-}
+const updateResourceMessage = _.assignIn({}, createResourceMessage, { topic: 'challenge.action.resource.update' })
+
+const removeResourceMessage = _.assignIn({}, createResourceMessage, { topic: 'challenge.action.resource.delete' })
 
 const createSubmissionMessage = {
   topic: 'submission.notification.create',
-  originator: 'submission-api',
+  originator: 'submissions-api',
   timestamp: '2019-02-03T01:01:00',
   'mime-type': 'application/json',
   payload: {
     resource: 'submission',
     id: uuid(),
-    type: 'ContestSubmission',
+    type: 'Contest Submission',
     url: 'http://test.com/submission/111',
-    memberId: '123456',
+    memberId: 123456,
     challengeId,
     created: '2019-02-03T01:01:00',
-    createdBy: 'test'
+    createdBy: 'test',
+    updated: '2019-02-03T01:01:00',
+    updatedBy: 'test'
+  }
+}
+
+const updateSubmissionMessage = {
+  topic: 'submission.notification.update',
+  originator: 'submissions-api',
+  timestamp: '2019-02-03T01:01:00',
+  'mime-type': 'application/json',
+  payload: {
+    resource: 'submission',
+    id: uuid(),
+    type: 'Checkpoint Submission',
+    url: 'http://test.com/submission/111',
+    memberId: 123456,
+    challengeId
   }
 }
 
 const removeSubmissionMessage = {
   topic: 'submission.notification.delete',
-  originator: 'submission-api',
+  originator: 'submissions-api',
   timestamp: '2019-02-03T01:01:00',
   'mime-type': 'application/json',
-  payload: createSubmissionMessage.payload
+  payload: {
+    resource: 'submission',
+    id: submissionId
+  }
 }
+
+const requiredFields = ['originator', 'timestamp', 'mime-type', 'payload.id', 'payload.challengeId', 'payload.memberId',
+  'payload.memberHandle', 'payload.roleId', 'payload.resource', 'payload.type']
+
+const stringFields = ['originator', 'mime-type', 'payload.id', 'payload.memberHandle', 'payload.resource',
+  'payload.roleId', 'payload.url', 'payload.type', 'payload.createdBy', 'payload.updatedBy']
+
+const guidFields = ['payload.id', 'payload.roleId']
+
+const dateFields = ['timestamp', 'payload.created']
 
 module.exports = {
   challengeId,
+  submissionId,
   notFoundId,
   challengeUpdatedMessage,
   challengePartiallyUpdatedMessage,
   createResourceMessage,
+  updateResourceMessage,
   removeResourceMessage,
   createSubmissionMessage,
-  removeSubmissionMessage
+  updateSubmissionMessage,
+  removeSubmissionMessage,
+  requiredFields,
+  stringFields,
+  guidFields,
+  dateFields
 }
