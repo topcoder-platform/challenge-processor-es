@@ -121,7 +121,7 @@ update.schema = {
         challengeId: Joi.string().uuid().required()
       })).allow(null),
       terms: Joi.array().items(Joi.object().keys({
-        id: Joi.number().strict(true).integer().positive().required(),
+        id: Joi.string().uuid().required(),
         agreeabilityType: Joi.string().required(),
         title: Joi.string(),
         url: Joi.string().allow(''),
