@@ -7,7 +7,7 @@ const logger = require('../../src/common/logger')
 const testHelper = require('./testHelper')
 
 if (process.argv.length < 3) {
-  logger.error('Missing argument for Elasticsearch id.')
+  logger.error('Missing argument for Elasticsearch document id.')
   process.exit()
 }
 

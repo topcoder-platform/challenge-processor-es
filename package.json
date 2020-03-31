@@ -34,11 +34,17 @@
     "http-aws-es": "^6.0.0",
     "joi": "^14.0.0",
     "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "no-kafka": "^3.4.3",
+    "superagent": "^5.1.0",
+    "tc-core-library-js": "appirio-tech/tc-core-library-js.git#v2.6.2",
     "topcoder-healthcheck-dropin": "^1.0.2",
     "winston": "^3.1.0"
   },
   "standard": {
+    "ignore": [
+      "mock"
+    ],
     "env": [
       "mocha"
     ]
