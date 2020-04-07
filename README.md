@@ -9,7 +9,6 @@ This microservice processes kafka events related to challenges and updates data 
 [![CircleCI](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/master.svg?style=svg)](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/master)
   
 ## Intended use
-
 - Processor for updating challenge data in ES  
 
 ## Related repos 
