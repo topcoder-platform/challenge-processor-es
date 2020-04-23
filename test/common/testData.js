@@ -22,10 +22,14 @@ const challengeUpdatedMessage = {
   payload: {
     id: challengeId,
     typeId: uuid(),
-    track: 'Code',
+    legacy: {
+      track: 'Code',
+      reviewType: 'code review',
+      forumId: 456456
+    },
     name: 'test challenge 2',
     description: 'some description 2',
-    challengeSettings: [{ type: uuid(), value: 'value 2' }],
+    metadata: [{ type: uuid(), value: 'value 2' }],
     timelineTemplateId: uuid(),
     phases: [{
       id: phase1Id,
@@ -56,10 +60,8 @@ const challengeUpdatedMessage = {
         value: 800
       }]
     }],
-    reviewType: 'code review',
     tags: ['nodejs'],
     projectId: 121212,
-    forumId: 456456,
     legacyId: 898989,
     status: 'Active',
     attachments: [{

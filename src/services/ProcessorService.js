@@ -77,13 +77,17 @@ update.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       id: Joi.string().uuid().required(),
+      legacy: Joi.object().keys({
+        track: Joi.string().required(),
+        reviewType: Joi.string().required(),
+        forumId: Joi.number().integer().positive()
+      }),
       typeId: Joi.string().uuid(),
-      track: Joi.string(),
       name: Joi.string(),
       description: Joi.string(),
       privateDescription: Joi.string(),
-      challengeSettings: Joi.array().items(Joi.object().keys({
-        type: Joi.string().uuid().required(),
+      metadata: Joi.array().items(Joi.object().keys({
+        name: Joi.string().uuid().required(),
         value: Joi.string().required()
       })).unique((a, b) => a.type === b.type).allow(null),
       timelineTemplateId: Joi.string().uuid(),
@@ -107,10 +111,8 @@ update.schema = {
           value: Joi.number().positive().required()
         })).min(1).required()
       })),
-      reviewType: Joi.string(),
       tags: Joi.array().items(Joi.string()), // tag names
       projectId: Joi.number().integer().positive(),
-      forumId: Joi.number().integer().positive(),
       legacyId: Joi.number().integer().positive().allow(null),
       status: Joi.string(),
       startDate: Joi.date(),
@@ -120,13 +122,7 @@ update.schema = {
         fileName: Joi.string().required(),
         challengeId: Joi.string().uuid().required()
       })).allow(null),
-      terms: Joi.array().items(Joi.object().keys({
-        id: Joi.string().uuid().required(),
-        agreeabilityType: Joi.string().required(),
-        title: Joi.string(),
-        url: Joi.string().allow(''),
-        templateId: Joi.string()
-      })).allow(null),
+      terms: Joi.array().items(Joi.string().uuid()).allow(null),
       groups: Joi.array().items(Joi.string()).allow(null), // group names
       created: Joi.date(),
       createdBy: Joi.string(), // user handle
