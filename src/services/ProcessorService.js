@@ -80,6 +80,8 @@ update.schema = {
       legacy: Joi.object().keys({
         track: Joi.string().required(),
         reviewType: Joi.string().required(),
+        confidentialityType: Joi.string(),
+        directProjectId: Joi.number(),
         forumId: Joi.number().integer().positive()
       }),
       typeId: Joi.string().uuid(),
@@ -112,7 +114,7 @@ update.schema = {
         })).min(1).required()
       })),
       tags: Joi.array().items(Joi.string()), // tag names
-      projectId: Joi.number().integer().positive(),
+      projectId: Joi.number().integer().positive().allow(null),
       legacyId: Joi.number().integer().positive().allow(null),
       status: Joi.string(),
       startDate: Joi.date(),

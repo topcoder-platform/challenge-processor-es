@@ -25,6 +25,8 @@ const challengeUpdatedMessage = {
     legacy: {
       track: 'Code',
       reviewType: 'code review',
+      directProjectId: 123,
+      confidentialityType: 'public',
       forumId: 456456
     },
     name: 'test challenge 2',
