@@ -38,6 +38,7 @@ function getChallengeEndDate (phases, startDate) {
  * @param {Object} message the challenge updated message
  */
 async function update (message) {
+  logger.info('Before processing message')
   // it will do full or partial update
   // `currentPhase` is automatically set to the last phase object with isOpen == true
   // `endDate` is calculated with Optimistic Concurrency Control:
@@ -67,6 +68,7 @@ async function update (message) {
     },
     refresh: 'true'
   })
+  logger.info('After processing message')
 }
 
 update.schema = {
