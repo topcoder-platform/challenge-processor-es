@@ -107,7 +107,7 @@ update.schema = {
         scheduledEndDate: Joi.date(),
         actualStartDate: Joi.date(),
         actualEndDate: Joi.date()
-      })).unknown(true),
+      }).unknown(true)),
       prizeSets: Joi.array().items(Joi.object().keys({
         type: Joi.string().required(),
         description: Joi.string(),
