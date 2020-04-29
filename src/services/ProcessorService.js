@@ -101,12 +101,13 @@ update.schema = {
         phaseId: Joi.string().uuid().required(),
         predecessor: Joi.string().uuid(),
         isOpen: Joi.boolean(),
+        name: Joi.string(),
         duration: Joi.number().positive().required(),
         scheduledStartDate: Joi.date(),
         scheduledEndDate: Joi.date(),
         actualStartDate: Joi.date(),
         actualEndDate: Joi.date()
-      })),
+      })).unknown(true),
       prizeSets: Joi.array().items(Joi.object().keys({
         type: Joi.string().required(),
         description: Joi.string(),
