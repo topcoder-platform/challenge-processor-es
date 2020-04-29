@@ -50,17 +50,21 @@ async function update (message) {
     id: message.payload.id
   }
   if (doc.phases && doc.phases.length > 0) {
+    logger.debug('Doc has phases', doc.phases.length)
     doc.currentPhase = message.payload.phases.slice().reverse().find(phase => phase.isOpen)
     let startDate = doc.startDate
     if (!startDate) {
       const challenge = await client.get(request)
       request.version = challenge.version
       startDate = challenge._source.startDate
+      logger.debug('Doc Phase had no start start date', startDate)
     }
     if (startDate) {
       doc.endDate = getChallengeEndDate(doc.phases, startDate)
+      logger.debug('Updating End Date', doc.endDate)
     }
   }
+  logger.debug('Updating ES', doc)
   await client.update({
     ...request,
     body: {
