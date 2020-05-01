@@ -38,6 +38,7 @@ function getChallengeEndDate (phases, startDate) {
  * @param {Object} message the challenge updated message
  */
 async function update (message) {
+  logger.info('Before processing message')
   // it will do full or partial update
   // `currentPhase` is automatically set to the last phase object with isOpen == true
   // `endDate` is calculated with Optimistic Concurrency Control:
@@ -49,17 +50,21 @@ async function update (message) {
     id: message.payload.id
   }
   if (doc.phases && doc.phases.length > 0) {
+    logger.debug('Doc has phases', doc.phases.length)
     doc.currentPhase = message.payload.phases.slice().reverse().find(phase => phase.isOpen)
     let startDate = doc.startDate
     if (!startDate) {
       const challenge = await client.get(request)
       request.version = challenge.version
       startDate = challenge._source.startDate
+      logger.debug('Doc Phase had no start start date', startDate)
     }
     if (startDate) {
       doc.endDate = getChallengeEndDate(doc.phases, startDate)
+      logger.debug('Updating End Date', doc.endDate)
     }
   }
+  logger.debug('Updating ES', doc)
   await client.update({
     ...request,
     body: {
@@ -67,6 +72,7 @@ async function update (message) {
     },
     refresh: 'true'
   })
+  logger.info('After processing message')
 }
 
 update.schema = {
@@ -77,13 +83,20 @@ update.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       id: Joi.string().uuid().required(),
+      legacy: Joi.object().keys({
+        track: Joi.string().required(),
+        reviewType: Joi.string().required(),
+        confidentialityType: Joi.string(),
+        directProjectId: Joi.number(),
+        forumId: Joi.number().integer().positive(),
+        informixModified: Joi.string()
+      }),
       typeId: Joi.string().uuid(),
-      track: Joi.string(),
       name: Joi.string(),
       description: Joi.string(),
       privateDescription: Joi.string(),
-      challengeSettings: Joi.array().items(Joi.object().keys({
-        type: Joi.string().uuid().required(),
+      metadata: Joi.array().items(Joi.object().keys({
+        name: Joi.string().uuid().required(),
         value: Joi.string().required()
       })).unique((a, b) => a.type === b.type).allow(null),
       timelineTemplateId: Joi.string().uuid(),
@@ -92,12 +105,13 @@ update.schema = {
         phaseId: Joi.string().uuid().required(),
         predecessor: Joi.string().uuid(),
         isOpen: Joi.boolean(),
+        name: Joi.string(),
         duration: Joi.number().positive().required(),
         scheduledStartDate: Joi.date(),
         scheduledEndDate: Joi.date(),
         actualStartDate: Joi.date(),
         actualEndDate: Joi.date()
-      })),
+      }).unknown(true)),
       prizeSets: Joi.array().items(Joi.object().keys({
         type: Joi.string().required(),
         description: Joi.string(),
@@ -107,10 +121,8 @@ update.schema = {
           value: Joi.number().positive().required()
         })).min(1).required()
       })),
-      reviewType: Joi.string(),
       tags: Joi.array().items(Joi.string()), // tag names
-      projectId: Joi.number().integer().positive(),
-      forumId: Joi.number().integer().positive(),
+      projectId: Joi.number().integer().positive().allow(null),
       legacyId: Joi.number().integer().positive().allow(null),
       status: Joi.string(),
       startDate: Joi.date(),
@@ -120,13 +132,7 @@ update.schema = {
         fileName: Joi.string().required(),
         challengeId: Joi.string().uuid().required()
       })).allow(null),
-      terms: Joi.array().items(Joi.object().keys({
-        id: Joi.string().uuid().required(),
-        agreeabilityType: Joi.string().required(),
-        title: Joi.string(),
-        url: Joi.string().allow(''),
-        templateId: Joi.string()
-      })).allow(null),
+      terms: Joi.array().items(Joi.string().uuid()).allow(null),
       groups: Joi.array().items(Joi.string()).allow(null), // group names
       created: Joi.date(),
       createdBy: Joi.string(), // user handle

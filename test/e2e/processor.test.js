@@ -370,9 +370,9 @@ describe('TC Challenge Processor E2E Tests', () => {
     throw new Error('There should be validation error.')
   })
 
-  it('update challenge message - invalid parameters, invalid challenge setting', async () => {
+  it('update challenge message - invalid parameters, invalid challenge metadata', async () => {
     const message = _.cloneDeep(challengeUpdatedMessage)
-    message.payload.challengeSettings[0].other = 123
+    message.payload.metadata[0].other = 123
     try {
       await ProcessorService.update(message)
     } catch (err) {
@@ -422,7 +422,7 @@ describe('TC Challenge Processor E2E Tests', () => {
 
   it('update challenge message - invalid parameters, invalid forumId', async () => {
     const message = _.cloneDeep(challengePartiallyUpdatedMessage)
-    message.payload.forumId = 'abc'
+    message.payload.legacy.forumId = 'abc'
     try {
       await ProcessorService.update(message)
     } catch (err) {
