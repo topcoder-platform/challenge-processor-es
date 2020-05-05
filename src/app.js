@@ -37,13 +37,13 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
   }
   return (async () => {
     switch (topic) {
-      case config.UPDATE_DATA_TOPIC:
-        await ProcessorService.update(messageJSON)
-        break
       // Moved to the API
-      // case config.CREATE_RESOURCE_TOPIC:
-      //   await ProcessorService.createResource(messageJSON)
-      //   break
+      // case config.UPDATE_DATA_TOPIC:
+      //   await ProcessorService.update(messageJSON)
+      // break
+      case config.CREATE_RESOURCE_TOPIC:
+        await ProcessorService.createResource(messageJSON)
+        break
       case config.UPDATE_RESOURCE_TOPIC:
         await ProcessorService.updateResource(messageJSON)
         break
