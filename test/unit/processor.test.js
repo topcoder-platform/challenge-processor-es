@@ -491,7 +491,7 @@ describe('TC Challenge Processor Unit Tests', () => {
     it(`call ${op} successfully`, async () => {
       await ProcessorService[op](testMessage)
       const data = await testHelper.getESData(challengeId)
-      expect(data.numberOfRegistrants).to.equal(2)
+      expect(data.numOfRegistrants).to.equal(2)
     })
   }
 
@@ -505,9 +505,9 @@ describe('TC Challenge Processor Unit Tests', () => {
     it(`call ${op} successfully`, async () => {
       await ProcessorService[op](testMessage)
       const data = await testHelper.getESData(challengeId)
-      expect(data.numberOfSubmissions).to.equal(2)
-      expect(data.numberOfSubmitters).to.equal(1)
-      expect(data.numberOfCheckpointSubmissions).to.equal(2)
+      expect(data.numOfSubmissions).to.equal(2)
+      expect(data.numOfSubmitters).to.equal(1)
+      expect(data.numOfCheckpointSubmissions).to.equal(2)
       expect(data.submissions.length).to.equal(1)
       expect(data.submissions[0].submitterId).to.equal(222)
       expect(data.submissions[0].submitter).to.equal('handle1')
