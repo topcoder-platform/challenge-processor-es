@@ -163,7 +163,7 @@ async function updateNumberOfRegistrants (challengeId) {
     type: config.get('esConfig.ES_TYPE'),
     id: challengeId,
     body: {
-      doc: { numberOfRegistrants: count }
+      doc: { numOfRegistrants: count }
     },
     refresh: 'true'
   })
@@ -238,24 +238,24 @@ async function updateSubmissionsData (challengeId) {
   // construct data
   const submissions = []
   const checkpoints = []
-  let numberOfSubmissions = 0
-  let numberOfSubmitters = 0
-  let numberOfCheckpointSubmissions = 0
+  let numOfSubmissions = 0
+  let numOfRegistrants = 0
+  let numOfCheckpointSubmissions = 0
   const submittersMap = {}
 
   _.forEach(subs, (sub) => {
     let target
     if (sub.type === config.CONTEST_SUBMISSION_TYPE) {
       target = submissions
-      numberOfSubmissions += 1
+      numOfSubmissions += 1
       // count number of submitters, only contest submissions are considered
       if (!submittersMap[sub.memberId]) {
-        numberOfSubmitters += 1
+        numOfRegistrants += 1
         submittersMap[sub.memberId] = true
       }
     } else if (sub.type === config.CHECKPOINT_SUBMISSION_TYPE) {
       target = checkpoints
-      numberOfCheckpointSubmissions += 1
+      numOfCheckpointSubmissions += 1
     } else {
       // ignore the submission, it is not type of contest submission or checkpoint submission
       return
@@ -288,9 +288,9 @@ async function updateSubmissionsData (challengeId) {
       doc: {
         submissions,
         checkpoints,
-        numberOfSubmissions,
-        numberOfSubmitters,
-        numberOfCheckpointSubmissions
+        numOfSubmissions,
+        numOfRegistrants,
+        numOfCheckpointSubmissions
       }
     },
     refresh: 'true'

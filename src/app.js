@@ -38,7 +38,8 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
   return (async () => {
     switch (topic) {
       case config.UPDATE_DATA_TOPIC:
-        await ProcessorService.update(messageJSON)
+        // await ProcessorService.update(messageJSON)
+        logger.debug('Will skip... This was moved on the API')
         break
       case config.CREATE_RESOURCE_TOPIC:
         await ProcessorService.createResource(messageJSON)
