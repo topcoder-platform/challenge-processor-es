@@ -30,7 +30,7 @@ module.exports = {
   DELETE_SUBMISSION_TOPIC: process.env.DELETE_SUBMISSION_TOPIC || 'submission.notification.delete',
 
   // challenge registrant resource role id, if not provided then any resource role is considered as registrant
-  REGISTRANT_RESOURCE_ROLE_ID: process.env.REGISTRANT_RESOURCE_ROLE_ID || '173803d3-019e-4033-b1cf-d7205c7f773a',
+  REGISTRANT_RESOURCE_ROLE_ID: process.env.REGISTRANT_RESOURCE_ROLE_ID || '732339e7-8e30-49d7-9198-cccf9451e221',
   SUBMISSIONS_API_URL: process.env.SUBMISSIONS_API_URL || 'http://localhost:4000/v5/submissions',
   RESOURCES_API_URL: process.env.RESOURCES_API_URL || 'http://localhost:4000/v5/resources',
   CONTEST_SUBMISSION_TYPE: process.env.CONTEST_SUBMISSION_TYPE || 'Contest Submission',
