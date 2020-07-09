@@ -63,6 +63,17 @@ async function update (message) {
       doc.endDate = getChallengeEndDate(doc.phases, startDate)
       logger.debug('Updating End Date', doc.endDate)
     }
+    const registrationPhase = _.find(doc.phases, p => p.name === 'Registration')
+    const submissionPhase = _.find(doc.phases, p => p.name === 'Submission')
+    doc.currentPhaseNames = _.map(_.filter(doc.phases, p => p.isOpen === true), 'name')
+    if (registrationPhase) {
+      doc.registrationStartDate = registrationPhase.actualStartDate || registrationPhase.scheduledStartDate
+      doc.registrationEndDate = registrationPhase.actualEndDate || registrationPhase.scheduledEndDate
+    }
+    if (submissionPhase) {
+      doc.submissionStartDate = submissionPhase.actualStartDate || submissionPhase.scheduledStartDate
+      doc.submissionEndDate = submissionPhase.actualEndDate || submissionPhase.scheduledEndDate
+    }
   }
   logger.debug('Updating ES', doc)
   await client.update({
