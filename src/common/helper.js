@@ -6,6 +6,7 @@ const AWS = require('aws-sdk')
 const config = require('config')
 const elasticsearch = require('elasticsearch')
 const _ = require('lodash')
+const logger = require('./logger')
 const m2mAuth = require('tc-core-library-js').auth.m2m
 const m2m = m2mAuth(_.pick(config, ['AUTH0_URL', 'AUTH0_AUDIENCE', 'TOKEN_CACHE_TIME', 'AUTH0_PROXY_SERVER_URL']))
 const superagent = require('superagent')
@@ -106,8 +107,52 @@ function getESClient () {
   return esClients['client']
 }
 
+/**
+ * Get v5 challenge uuid if the challenge id is legacyId format form
+ * @param {String} challengeId Challenge ID
+ * @returns {String} Legacy Challenge ID of the given challengeId
+ */
+async function getV5ChallengeId (challengeId) {
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(challengeId)) {
+    return challengeId
+  } else {
+    logger.debug(`${challengeId} detected as legacyId. Fetching challenge uuid`)
+    try {
+      const v5challenge = await getData(`${config.CHALLENGE_API_URL}?legacyId=${challengeId}`)
+      logger.debug(`Legacy challenge id is ${v5challenge.id} for v5 challenge legacyId ${challengeId}`)
+      return v5challenge.id
+    } catch (err) {
+      logger.error(`Error while accessing ${config.CHALLENGE_API_URL}?legacyId=${challengeId} - ${JSON.stringify(err)}`)
+      throw err
+    }
+  }
+}
+
+/**
+ * Get legacy challenge id if the challenge id is uuid form
+ * @param {String} challengeId Challenge ID
+ * @returns {String} Legacy Challenge ID of the given challengeId
+ */
+async function getLegacyChallengeId (challengeId) {
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(challengeId)) {
+    logger.debug(`${challengeId} detected as uuid. Fetching legacy challenge id`)
+    try {
+      const v5challenge = await getData(`${config.CHALLENGE_API_URL}/${challengeId}`)
+      const legacyId = parseInt(v5challenge.legacyId, 10)
+      logger.debug(`Legacy challenge id is ${legacyId} for v5 challenge id ${challengeId}`)
+      return legacyId
+    } catch (err) {
+      logger.error(`Error while accessing ${config.CHALLENGEAPI_V5_URL}/${challengeId}`)
+      throw err
+    }
+  }
+  return challengeId
+}
+
 module.exports = {
   getData,
   getAllPagesData,
-  getESClient
+  getESClient,
+  getV5ChallengeId,
+  getLegacyChallengeId
 }

@@ -33,6 +33,7 @@ module.exports = {
   REGISTRANT_RESOURCE_ROLE_ID: process.env.REGISTRANT_RESOURCE_ROLE_ID || '732339e7-8e30-49d7-9198-cccf9451e221',
   SUBMISSIONS_API_URL: process.env.SUBMISSIONS_API_URL || 'http://localhost:4000/v5/submissions',
   RESOURCES_API_URL: process.env.RESOURCES_API_URL || 'http://localhost:4000/v5/resources',
+  CHALLENGE_API_URL: process.env.RESOURCES_API_URL || 'http://localhost:4000/v5/challenges',
   CONTEST_SUBMISSION_TYPE: process.env.CONTEST_SUBMISSION_TYPE || 'Contest Submission',
   CHECKPOINT_SUBMISSION_TYPE: process.env.CHECKPOINT_SUBMISSION_TYPE || 'Checkpoint Submission',
 

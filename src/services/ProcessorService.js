@@ -229,22 +229,25 @@ removeResource.schema = createResource.schema
  * @param {String} challengeId the challenge id
  */
 async function updateSubmissionsData (challengeId) {
+  // const v5challengeId = await helper.getV5ChallengeId(challengeId)
+  const legacyId = await helper.getLegacyChallengeId(challengeId)
+  logger.debug(`Update Submissions Data - Legacy ID ${legacyId}`)
   // get all challenge resources
-  const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
+  // const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
   // get all challenge submissions, all pages are retrieved
-  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { challengeId })
+  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { legacyId })
 
   // function to find submitter handle by member id among challenge resources
-  const getSubmitter = (memberId) => {
-    const resource = _.find(resources, (r) => String(r.memberId) === String(memberId))
-    if (!resource) {
-      // there are some rare cases that submitter resource is not found,
-      // e.g. user unregisters a challenge after uploading a submission,
-      // in such cases, return null submitter instead of disabling the whole challenge submissions data
-      return null
-    }
-    return resource.memberHandle
-  }
+  // const getSubmitter = (memberId) => {
+  //   const resource = _.find(resources, (r) => String(r.memberId) === String(memberId))
+  //   if (!resource) {
+  //     // there are some rare cases that submitter resource is not found,
+  //     // e.g. user unregisters a challenge after uploading a submission,
+  //     // in such cases, return null submitter instead of disabling the whole challenge submissions data
+  //     return null
+  //   }
+  //   return resource.memberHandle
+  // }
 
   // construct data
   const submissions = []
@@ -255,9 +258,9 @@ async function updateSubmissionsData (challengeId) {
   const submittersMap = {}
 
   _.forEach(subs, (sub) => {
-    let target
+    // let target
     if (sub.type === config.CONTEST_SUBMISSION_TYPE) {
-      target = submissions
+      // target = submissions
       numOfSubmissions += 1
       // count number of submitters, only contest submissions are considered
       if (!submittersMap[sub.memberId]) {
@@ -265,29 +268,30 @@ async function updateSubmissionsData (challengeId) {
         submittersMap[sub.memberId] = true
       }
     } else if (sub.type === config.CHECKPOINT_SUBMISSION_TYPE) {
-      target = checkpoints
+      // target = checkpoints
       numOfCheckpointSubmissions += 1
-    } else {
-      // ignore the submission, it is not type of contest submission or checkpoint submission
-      return
     }
+    // } else {
+    // ignore the submission, it is not type of contest submission or checkpoint submission
+    // return
+    // }
     // add submission to submissions or checkpoints
-    const record = _.find(target, (item) => String(item.submitterId) === String(sub.memberId))
-    if (record) {
-      record.submissions.push({
-        submissionId: sub.id,
-        submissionTime: sub.created
-      })
-    } else {
-      target.push({
-        submitter: getSubmitter(sub.memberId),
-        submitterId: sub.memberId,
-        submissions: [{
-          submissionId: sub.id,
-          submissionTime: sub.created
-        }]
-      })
-    }
+    // const record = _.find(target, (item) => String(item.submitterId) === String(sub.memberId))
+    // if (record) {
+    //   record.submissions.push({
+    //     submissionId: sub.id,
+    //     submissionTime: sub.created
+    //   })
+    // } else {
+    //   target.push({
+    //     submitter: getSubmitter(sub.memberId),
+    //     submitterId: sub.memberId,
+    //     submissions: [{
+    //       submissionId: sub.id,
+    //       submissionTime: sub.created
+    //     }]
+    //   })
+    // }
   })
 
   // update challenge's submissions data, only update changed fields to improve performance
@@ -328,19 +332,7 @@ createSubmission.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       resource: Joi.string().required(),
-      id: Joi.string().uuid().required(),
-      type: Joi.string().required(),
-      fileType: Joi.string(),
-      url: Joi.string().uri(),
-      memberId: intOrUUID().required(),
-      challengeId: intOrUUID().required(),
-      legacySubmissionId: intOrUUID(),
-      legacyUploadId: intOrUUID(),
-      submissionPhaseId: intOrUUID(),
-      created: Joi.date().required(),
-      updated: Joi.date(),
-      createdBy: Joi.string().required(),
-      updatedBy: Joi.string()
+      challengeId: intOrUUID().required()
     }).unknown(true).required()
   }).required()
 }
@@ -365,14 +357,7 @@ updateSubmission.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       resource: Joi.string().required(),
-      id: Joi.string().uuid().required(),
-      type: Joi.string().required(),
-      url: Joi.string().uri(),
-      memberId: intOrUUID().required(),
-      challengeId: intOrUUID().required(),
-      legacySubmissionId: intOrUUID(),
-      legacyUploadId: intOrUUID(),
-      submissionPhaseId: intOrUUID()
+      challengeId: intOrUUID().required()
     }).unknown(true).required()
   }).required()
 }
