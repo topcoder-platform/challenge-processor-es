@@ -118,7 +118,7 @@ async function getV5ChallengeId (challengeId) {
   } else {
     logger.debug(`${challengeId} detected as legacyId. Fetching challenge uuid`)
     try {
-      const v5challenge = await getData(`${config.CHALLENGE_API_URL}?legacyId=${challengeId}`)
+      const [v5challenge] = await getData(`${config.CHALLENGE_API_URL}?legacyId=${challengeId}`)
       logger.debug(`Legacy challenge id is ${v5challenge.id} for v5 challenge legacyId ${challengeId}`)
       return v5challenge.id
     } catch (err) {
