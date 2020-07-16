@@ -33,7 +33,7 @@
     "get-parameter-names": "^0.3.0",
     "http-aws-es": "^6.0.0",
     "joi": "^14.0.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "no-kafka": "^3.4.3",
     "superagent": "^5.1.0",
