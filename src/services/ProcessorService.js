@@ -235,7 +235,7 @@ async function updateSubmissionsData (challengeId) {
   // get all challenge resources
   // const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
   // get all challenge submissions, all pages are retrieved
-  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { legacyId })
+  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { challengeId: legacyId })
 
   // function to find submitter handle by member id among challenge resources
   // const getSubmitter = (memberId) => {
