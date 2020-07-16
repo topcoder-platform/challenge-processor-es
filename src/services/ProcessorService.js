@@ -231,7 +231,7 @@ removeResource.schema = createResource.schema
 async function updateSubmissionsData (challengeId) {
   const v5challengeId = await helper.getV5ChallengeId(challengeId)
   const legacyId = await helper.getLegacyChallengeId(challengeId)
-  logger.debug(`Update Submissions Data - Legacy ID ${legacyId}`)
+  logger.debug(`Update Submissions Data - Legacy ID ${legacyId} - Challenge UUID ${v5challengeId}`)
   // get all challenge resources
   // const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
   // get all challenge submissions, all pages are retrieved
@@ -250,8 +250,8 @@ async function updateSubmissionsData (challengeId) {
   // }
 
   // construct data
-  const submissions = []
-  const checkpoints = []
+  // const submissions = []
+  // const checkpoints = []
   let numOfSubmissions = 0
   let numOfRegistrants = 0
   let numOfCheckpointSubmissions = 0
@@ -295,21 +295,23 @@ async function updateSubmissionsData (challengeId) {
   })
 
   // update challenge's submissions data, only update changed fields to improve performance
-  await client.update({
+  const doc = {
     index: config.get('esConfig.ES_INDEX'),
     type: config.get('esConfig.ES_TYPE'),
     id: v5challengeId,
     body: {
       doc: {
-        submissions,
-        checkpoints,
+        // submissions,
+        // checkpoints,
         numOfSubmissions,
         numOfRegistrants,
         numOfCheckpointSubmissions
       }
     },
     refresh: 'true'
-  })
+  }
+  logger.debug(`esQuery ${JSON.stringify(doc)}`)
+  await client.update(doc)
 }
 
 /**
