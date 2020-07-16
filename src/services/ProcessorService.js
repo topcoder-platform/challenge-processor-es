@@ -229,7 +229,7 @@ removeResource.schema = createResource.schema
  * @param {String} challengeId the challenge id
  */
 async function updateSubmissionsData (challengeId) {
-  // const v5challengeId = await helper.getV5ChallengeId(challengeId)
+  const v5challengeId = await helper.getV5ChallengeId(challengeId)
   const legacyId = await helper.getLegacyChallengeId(challengeId)
   logger.debug(`Update Submissions Data - Legacy ID ${legacyId}`)
   // get all challenge resources
@@ -298,7 +298,7 @@ async function updateSubmissionsData (challengeId) {
   await client.update({
     index: config.get('esConfig.ES_INDEX'),
     type: config.get('esConfig.ES_TYPE'),
-    id: challengeId,
+    id: v5challengeId,
     body: {
       doc: {
         submissions,
