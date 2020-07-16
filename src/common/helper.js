@@ -142,7 +142,7 @@ async function getLegacyChallengeId (challengeId) {
       logger.debug(`Legacy challenge id is ${legacyId} for v5 challenge id ${challengeId}`)
       return legacyId
     } catch (err) {
-      logger.error(`Error while accessing ${config.CHALLENGEAPI_V5_URL}/${challengeId}`)
+      logger.error(`Error while accessing ${config.CHALLENGE_API_URL}/${challengeId}`)
       throw err
     }
   }
