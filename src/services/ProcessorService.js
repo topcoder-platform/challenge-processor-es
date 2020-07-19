@@ -310,7 +310,7 @@ async function updateSubmissionsData (challengeId) {
     },
     refresh: 'true'
   }
-  logger.debug(`esQuery ${JSON.stringify(doc)}`)
+  // logger.debug(`esQuery ${JSON.stringify(doc)}`)
   await client.update(doc)
 }
 
@@ -323,7 +323,11 @@ async function createSubmission (message) {
     logger.info('Ignore message, it is not of submission resource.')
     return
   }
-  await updateSubmissionsData(message.payload.challengeId)
+  if (message.payload.challengeId) {
+    await updateSubmissionsData(message.payload.challengeId)
+  } else {
+    throw new Error('No Challenge ID passed')
+  }
 }
 
 createSubmission.schema = {
@@ -334,7 +338,7 @@ createSubmission.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       resource: Joi.string().required(),
-      challengeId: intOrUUID().required()
+      challengeId: intOrUUID()
     }).unknown(true).required()
   }).required()
 }
@@ -348,7 +352,15 @@ async function updateSubmission (message) {
     logger.info('Ignore message, it is not of submission resource.')
     return
   }
-  await updateSubmissionsData(message.payload.challengeId)
+
+  let challengeId = message.payload.challengeId
+  if (!challengeId) {
+    // get submission by id
+    const submission = await helper.getData(`${config.SUBMISSIONS_API_URL}/${message.payload.id}`)
+    challengeId = submission.challengeId
+  }
+
+  await updateSubmissionsData(challengeId)
 }
 
 updateSubmission.schema = {
@@ -359,7 +371,7 @@ updateSubmission.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       resource: Joi.string().required(),
-      challengeId: intOrUUID().required()
+      challengeId: intOrUUID()
     }).unknown(true).required()
   }).required()
 }
