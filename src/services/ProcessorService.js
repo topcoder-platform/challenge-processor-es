@@ -225,30 +225,11 @@ updateResource.schema = createResource.schema
  * @param {Object} message the challenge resource removed message
  */
 async function removeResource (message) {
+  logger.debug(`Remove Resource Call ${JSON.stringify(message)}`)
   await updateNumberOfRegistrants(message.payload.challengeId)
 }
 
-// removeResource.schema = createResource.schema
-createResource.schema = {
-  message: Joi.object().keys({
-    topic: Joi.string().required(),
-    originator: Joi.string().required(),
-    timestamp: Joi.date().required(),
-    'mime-type': Joi.string().required(),
-    payload: Joi.object().keys({
-      id: Joi.string().uuid().required(),
-      challengeId: intOrUUID().required(),
-      memberId: intOrUUID().required(),
-      memberHandle: Joi.string().required(),
-      legacyId: Joi.number().integer().positive().allow(null),
-      created: Joi.date().required(),
-      createdBy: Joi.string().required(),
-      updated: Joi.date(),
-      updatedBy: Joi.string(),
-      roleId: Joi.string().uuid().required()
-    }).unknown(true).required()
-  }).required()
-}
+removeResource.schema = createResource.schema
 
 /**
  * Update submissions data of given challenge.
