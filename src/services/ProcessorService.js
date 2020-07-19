@@ -199,6 +199,11 @@ createResource.schema = {
       challengeId: intOrUUID().required(),
       memberId: intOrUUID().required(),
       memberHandle: Joi.string().required(),
+      legacyId: Joi.number().integer().positive().allow(null),
+      created: Joi.date().required(),
+      createdBy: Joi.string().required(),
+      updated: Joi.date(),
+      updatedBy: Joi.string(),
       roleId: Joi.string().uuid().required()
     }).unknown(true).required()
   }).required()
