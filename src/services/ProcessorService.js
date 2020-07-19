@@ -159,22 +159,23 @@ update.schema = {
  */
 async function updateNumberOfRegistrants (challengeId) {
   // get all challenge resources
-  const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
-  // count registrants
-  let count = 0
-  _.forEach(resources, (resource) => {
-    if (!config.REGISTRANT_RESOURCE_ROLE_ID || config.REGISTRANT_RESOURCE_ROLE_ID === resource.roleId) {
-      count += 1
-    }
-  })
+  const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId, roleId: config.REGISTRANT_RESOURCE_ROLE_ID })
+  // // count registrants
+  // let count = 0
+  // _.forEach(resources, (resource) => {
+  //   if (!config.REGISTRANT_RESOURCE_ROLE_ID || config.REGISTRANT_RESOURCE_ROLE_ID === resource.roleId) {
+  //     count += 1
+  //   }
+  // })
 
+  logger.debug(`Update Number of Registrants: ${JSON.stringify(resources)} Length: ${resources.length}`)
   // update challenge's number of registrants, only update changed fields to improve performance
   await client.update({
     index: config.get('esConfig.ES_INDEX'),
     type: config.get('esConfig.ES_TYPE'),
     id: challengeId,
     body: {
-      doc: { numOfRegistrants: count }
+      doc: { numOfRegistrants: resources.length }
     },
     refresh: 'true'
   })
@@ -227,7 +228,27 @@ async function removeResource (message) {
   await updateNumberOfRegistrants(message.payload.challengeId)
 }
 
-removeResource.schema = createResource.schema
+// removeResource.schema = createResource.schema
+createResource.schema = {
+  message: Joi.object().keys({
+    topic: Joi.string().required(),
+    originator: Joi.string().required(),
+    timestamp: Joi.date().required(),
+    'mime-type': Joi.string().required(),
+    payload: Joi.object().keys({
+      id: Joi.string().uuid().required(),
+      challengeId: intOrUUID().required(),
+      memberId: intOrUUID().required(),
+      memberHandle: Joi.string().required(),
+      legacyId: Joi.number().integer().positive().allow(null),
+      created: Joi.date().required(),
+      createdBy: Joi.string().required(),
+      updated: Joi.date(),
+      updatedBy: Joi.string(),
+      roleId: Joi.string().uuid().required()
+    }).unknown(true).required()
+  }).required()
+}
 
 /**
  * Update submissions data of given challenge.
