@@ -99,8 +99,7 @@ update.schema = {
         reviewType: Joi.string().required(),
         confidentialityType: Joi.string(),
         directProjectId: Joi.number(),
-        forumId: Joi.number().integer().positive(),
-        informixModified: Joi.string()
+        forumId: Joi.number().integer().positive()
       }),
       typeId: Joi.string().uuid(),
       name: Joi.string(),
