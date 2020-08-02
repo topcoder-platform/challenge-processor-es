@@ -428,4 +428,4 @@ module.exports = {
   removeSubmission
 }
 
-logger.buildService(module.exports)
+// logger.buildService(module.exports)
