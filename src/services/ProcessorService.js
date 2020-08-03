@@ -158,7 +158,9 @@ update.schema = {
  */
 async function updateNumberOfRegistrants (challengeId) {
   // get all challenge resources
+  logger.debug(`Getting Registrant Info - URL ${config.RESOURCES_API_URL} Challenge ID: ${challengeId} Role ID: ${config.REGISTRANT_RESOURCE_ROLE_ID}`)
   const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId, roleId: config.REGISTRANT_RESOURCE_ROLE_ID })
+
   // // count registrants
   // let count = 0
   // _.forEach(resources, (resource) => {
