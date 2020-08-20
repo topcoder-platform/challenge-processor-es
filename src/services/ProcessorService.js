@@ -261,9 +261,9 @@ async function updateSubmissionsData (challengeId) {
   // const submissions = []
   // const checkpoints = []
   let numOfSubmissions = 0
-  let numOfRegistrants = 0
+  // let numOfRegistrants = 0
   let numOfCheckpointSubmissions = 0
-  const submittersMap = {}
+  // const submittersMap = {}
 
   _.forEach(subs, (sub) => {
     // let target
@@ -271,10 +271,10 @@ async function updateSubmissionsData (challengeId) {
       // target = submissions
       numOfSubmissions += 1
       // count number of submitters, only contest submissions are considered
-      if (!submittersMap[sub.memberId]) {
-        numOfRegistrants += 1
-        submittersMap[sub.memberId] = true
-      }
+      // if (!submittersMap[sub.memberId]) {
+      // numOfRegistrants += 1
+      // submittersMap[sub.memberId] = true
+      // }
     } else if (sub.type === config.CHECKPOINT_SUBMISSION_TYPE) {
       // target = checkpoints
       numOfCheckpointSubmissions += 1
@@ -312,7 +312,7 @@ async function updateSubmissionsData (challengeId) {
         // submissions,
         // checkpoints,
         numOfSubmissions,
-        numOfRegistrants,
+        // numOfRegistrants,
         numOfCheckpointSubmissions
       }
     },
