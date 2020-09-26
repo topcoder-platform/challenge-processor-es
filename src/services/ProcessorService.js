@@ -131,6 +131,14 @@ update.schema = {
           value: Joi.number().positive().required()
         })).min(1).required()
       })),
+      discussions: Joi.array().items(Joi.object().keys({
+        id: Joi.id(),
+        name: Joi.string().required(),
+        type: Joi.string().required().valid('challenge'),
+        provider: Joi.string().required(),
+        url: Joi.string(),
+        options: Joi.array().items(Joi.object())
+      })).allow(null),
       tags: Joi.array().items(Joi.string()), // tag names
       projectId: Joi.number().integer().positive().allow(null),
       legacyId: Joi.number().integer().positive().allow(null),
