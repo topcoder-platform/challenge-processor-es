@@ -9,6 +9,9 @@ const helper = require('../common/helper')
 const config = require('config')
 const moment = require('moment')
 
+Joi.optionalId = () => Joi.string().uuid()
+Joi.id = () => Joi.optionalId().required()
+
 const client = helper.getESClient()
 
 const intOrUUID = () => Joi.alternatives().try(Joi.number().integer().min(1), Joi.string().uuid())
