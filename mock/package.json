@@ -13,6 +13,6 @@
     "body-parser": "^1.15.1",
     "cors": "^2.7.1",
     "config": "^3.0.1",
-    "winston": "^3.1.0"
+    "winston": "^3.3.3"
   }
 }
