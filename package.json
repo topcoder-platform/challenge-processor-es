@@ -34,7 +34,7 @@
     "http-aws-es": "^6.0.0",
     "joi": "^14.0.0",
     "lodash": "^4.17.19",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "no-kafka": "^3.4.3",
     "superagent": "^5.1.0",
     "tc-core-library-js": "appirio-tech/tc-core-library-js.git#v2.6.4",
