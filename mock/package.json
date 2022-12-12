@@ -9,7 +9,7 @@
   "author": "TCSCODER",
   "license": "none",
   "dependencies": {
-    "express": "^4.15.4",
+    "express": "^4.17.3",
     "body-parser": "^1.15.1",
     "cors": "^2.7.1",
     "config": "^3.0.1",
