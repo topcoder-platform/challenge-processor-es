@@ -28,7 +28,7 @@
   "dependencies": {
     "aws-sdk": "^2.466.0",
     "bluebird": "^3.5.1",
-    "config": "^3.0.1",
+    "config": "^3.3.8",
     "elasticsearch": "^15.1.1",
     "get-parameter-names": "^0.3.0",
     "http-aws-es": "^6.0.0",
