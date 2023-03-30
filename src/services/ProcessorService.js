@@ -248,14 +248,13 @@ removeResource.schema = createResource.schema
  * Update submissions data of given challenge.
  * @param {String} challengeId the challenge id
  */
-async function updateSubmissionsData (challengeId) {
+async function updateSubmissionsData (challengeId, type) {
   const v5challengeId = await helper.getV5ChallengeId(challengeId)
-  const legacyId = await helper.getLegacyChallengeId(challengeId)
-  logger.debug(`Update Submissions Data - Legacy ID ${legacyId} - Challenge UUID ${v5challengeId}`)
+  logger.debug(`Update Submissions Data Challenge UUID ${v5challengeId}`)
   // get all challenge resources
   // const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
   // get all challenge submissions, all pages are retrieved
-  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { challengeId: legacyId })
+  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { challengeId: v5challengeId })
 
   // function to find submitter handle by member id among challenge resources
   // const getSubmitter = (memberId) => {
@@ -277,42 +276,51 @@ async function updateSubmissionsData (challengeId) {
   let numOfCheckpointSubmissions = 0
   // const submittersMap = {}
 
-  _.forEach(subs, (sub) => {
-    // let target
-    if (sub.type === config.CONTEST_SUBMISSION_TYPE) {
-      // target = submissions
+  if (_.isEmpty(subs) && type) {
+    if (type === config.CONTEST_SUBMISSION_TYPE) {
       numOfSubmissions += 1
-      // count number of submitters, only contest submissions are considered
-      // if (!submittersMap[sub.memberId]) {
-      // numOfRegistrants += 1
-      // submittersMap[sub.memberId] = true
-      // }
-    } else if (sub.type === config.CHECKPOINT_SUBMISSION_TYPE) {
+    } else if (type === config.CHECKPOINT_SUBMISSION_TYPE) {
       // target = checkpoints
       numOfCheckpointSubmissions += 1
     }
-    // } else {
-    // ignore the submission, it is not type of contest submission or checkpoint submission
-    // return
-    // }
-    // add submission to submissions or checkpoints
-    // const record = _.find(target, (item) => String(item.submitterId) === String(sub.memberId))
-    // if (record) {
-    //   record.submissions.push({
-    //     submissionId: sub.id,
-    //     submissionTime: sub.created
-    //   })
-    // } else {
-    //   target.push({
-    //     submitter: getSubmitter(sub.memberId),
-    //     submitterId: sub.memberId,
-    //     submissions: [{
-    //       submissionId: sub.id,
-    //       submissionTime: sub.created
-    //     }]
-    //   })
-    // }
-  })
+  } else {
+    _.forEach(subs, (sub) => {
+      // let target
+      if (sub.type === config.CONTEST_SUBMISSION_TYPE) {
+        // target = submissions
+        numOfSubmissions += 1
+        // count number of submitters, only contest submissions are considered
+        // if (!submittersMap[sub.memberId]) {
+        // numOfRegistrants += 1
+        // submittersMap[sub.memberId] = true
+        // }
+      } else if (sub.type === config.CHECKPOINT_SUBMISSION_TYPE) {
+        // target = checkpoints
+        numOfCheckpointSubmissions += 1
+      }
+      // } else {
+      // ignore the submission, it is not type of contest submission or checkpoint submission
+      // return
+      // }
+      // add submission to submissions or checkpoints
+      // const record = _.find(target, (item) => String(item.submitterId) === String(sub.memberId))
+      // if (record) {
+      //   record.submissions.push({
+      //     submissionId: sub.id,
+      //     submissionTime: sub.created
+      //   })
+      // } else {
+      //   target.push({
+      //     submitter: getSubmitter(sub.memberId),
+      //     submitterId: sub.memberId,
+      //     submissions: [{
+      //       submissionId: sub.id,
+      //       submissionTime: sub.created
+      //     }]
+      //   })
+      // }
+    })
+  }
 
   // update challenge's submissions data, only update changed fields to improve performance
   const doc = {
@@ -327,8 +335,7 @@ async function updateSubmissionsData (challengeId) {
         // numOfRegistrants,
         numOfCheckpointSubmissions
       }
-    },
-    refresh: 'true'
+    }
   }
   // logger.debug(`esQuery ${JSON.stringify(doc)}`)
   await client.update(doc)
@@ -343,11 +350,7 @@ async function createSubmission (message) {
     logger.info('Ignore message, it is not of submission resource.')
     return
   }
-  if (message.payload.challengeId) {
-    await updateSubmissionsData(message.payload.challengeId)
-  } else {
-    throw new Error('No Challenge ID passed')
-  }
+  await updateSubmissionsData(message.payload.v5ChallengeId, message.payload.type)
 }
 
 createSubmission.schema = {
@@ -358,7 +361,7 @@ createSubmission.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       resource: Joi.string().required(),
-      challengeId: intOrUUID()
+      v5ChallengeId: intOrUUID().required()
     }).unknown(true).required()
   }).required()
 }
@@ -373,14 +376,7 @@ async function updateSubmission (message) {
     return
   }
 
-  let challengeId = message.payload.challengeId
-  if (!challengeId) {
-    // get submission by id
-    const submission = await helper.getData(`${config.SUBMISSIONS_API_URL}/${message.payload.id}`)
-    challengeId = submission.challengeId
-  }
-
-  await updateSubmissionsData(challengeId)
+  await updateSubmissionsData(message.payload.v5ChallengeId, message.payload.type)
 }
 
 updateSubmission.schema = {
@@ -391,7 +387,7 @@ updateSubmission.schema = {
     'mime-type': Joi.string().required(),
     payload: Joi.object().keys({
       resource: Joi.string().required(),
-      challengeId: intOrUUID()
+      v5ChallengeId: intOrUUID().required()
     }).unknown(true).required()
   }).required()
 }
@@ -413,7 +409,8 @@ async function removeSubmission (message) {
   if (!challengeId) {
     // get submission by id
     const submission = await helper.getData(`${config.SUBMISSIONS_API_URL}/${message.payload.id}`)
-    challengeId = submission.challengeId
+    // This still can give legacy challenge id for old submissions
+    challengeId = submission.v5ChallengeId
   }
   await updateSubmissionsData(challengeId)
 }
