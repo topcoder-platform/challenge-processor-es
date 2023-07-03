@@ -172,7 +172,7 @@ async function updateNumberOfRegistrants (challengeId) {
   // get resource count
   logger.debug(`Getting Registrant Info - URL ${config.RESOURCES_API_URL}/count Challenge ID: ${challengeId} Role ID: ${config.REGISTRANT_RESOURCE_ROLE_ID}`)
   const resourceCount = await helper.getData(`${config.RESOURCES_API_URL}/count`, { challengeId, roleId: config.REGISTRANT_RESOURCE_ROLE_ID })
-  const numOfRegistrants = _.get(resourceCount, config.REGISTRANT_RESOURCE_ROLE_ID)
+  const numOfRegistrants = _.get(resourceCount, config.REGISTRANT_RESOURCE_ROLE_ID, 0)
   logger.debug(`Update Number of Registrants: ${JSON.stringify(resourceCount)} Length: ${numOfRegistrants}`)
   // update challenge's number of registrants, only update changed fields to improve performance
   await client.update({
@@ -191,7 +191,9 @@ async function updateNumberOfRegistrants (challengeId) {
  * @param {Object} message the challenge resource created message
  */
 async function createResource (message) {
-  await updateNumberOfRegistrants(message.payload.challengeId)
+  if (message.payload.roleId === config.REGISTRANT_RESOURCE_ROLE_ID) {
+    await updateNumberOfRegistrants(message.payload.challengeId)
+  }
 }
 
 createResource.schema = {
@@ -220,7 +222,9 @@ createResource.schema = {
  * @param {Object} message the challenge resource updated message
  */
 async function updateResource (message) {
-  await updateNumberOfRegistrants(message.payload.challengeId)
+  if (message.payload.roleId === config.REGISTRANT_RESOURCE_ROLE_ID) {
+    await updateNumberOfRegistrants(message.payload.challengeId)
+  }
 }
 
 updateResource.schema = createResource.schema
@@ -231,7 +235,9 @@ updateResource.schema = createResource.schema
  */
 async function removeResource (message) {
   logger.debug(`Remove Resource Call ${JSON.stringify(message)}`)
-  await updateNumberOfRegistrants(message.payload.challengeId)
+  if (message.payload.roleId === config.REGISTRANT_RESOURCE_ROLE_ID) {
+    await updateNumberOfRegistrants(message.payload.challengeId)
+  }
 }
 
 removeResource.schema = createResource.schema
