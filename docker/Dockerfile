@@ -1,5 +1,5 @@
 # Use the base image with Node.js 10.19
-FROM node:10.19
+FROM node:12.22.12
 
 # Copy the current directory into the Docker image
 COPY . /challenge-processor-es
@@ -8,5 +8,5 @@ COPY . /challenge-processor-es
 WORKDIR /challenge-processor-es
 
 # Install the dependencies from package.json
-RUN npm install
-CMD npm start
+RUN yarn install
+CMD node src/app.js
