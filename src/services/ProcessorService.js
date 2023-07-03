@@ -169,26 +169,18 @@ update.schema = {
  * @param {String} challengeId the challenge id
  */
 async function updateNumberOfRegistrants (challengeId) {
-  // get all challenge resources
-  logger.debug(`Getting Registrant Info - URL ${config.RESOURCES_API_URL} Challenge ID: ${challengeId} Role ID: ${config.REGISTRANT_RESOURCE_ROLE_ID}`)
-  const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId, roleId: config.REGISTRANT_RESOURCE_ROLE_ID })
-
-  // // count registrants
-  // let count = 0
-  // _.forEach(resources, (resource) => {
-  //   if (!config.REGISTRANT_RESOURCE_ROLE_ID || config.REGISTRANT_RESOURCE_ROLE_ID === resource.roleId) {
-  //     count += 1
-  //   }
-  // })
-
-  logger.debug(`Update Number of Registrants: ${JSON.stringify(resources)} Length: ${resources.length}`)
+  // get resource count
+  logger.debug(`Getting Registrant Info - URL ${config.RESOURCES_API_URL}/count Challenge ID: ${challengeId} Role ID: ${config.REGISTRANT_RESOURCE_ROLE_ID}`)
+  const resourceCount = await helper.getData(`${config.RESOURCES_API_URL}/count`, { challengeId, roleId: config.REGISTRANT_RESOURCE_ROLE_ID })
+  const numOfRegistrants = _.get(resourceCount, config.REGISTRANT_RESOURCE_ROLE_ID)
+  logger.debug(`Update Number of Registrants: ${JSON.stringify(resourceCount)} Length: ${numOfRegistrants}`)
   // update challenge's number of registrants, only update changed fields to improve performance
   await client.update({
     index: config.get('esConfig.ES_INDEX'),
     type: config.get('esConfig.ES_TYPE'),
     id: challengeId,
     body: {
-      doc: { numOfRegistrants: resources.length }
+      doc: { numOfRegistrants }
     },
     refresh: 'true'
   })
@@ -251,75 +243,18 @@ removeResource.schema = createResource.schema
 async function updateSubmissionsData (challengeId, type) {
   const v5challengeId = await helper.getV5ChallengeId(challengeId)
   logger.debug(`Update Submissions Data Challenge UUID ${v5challengeId}`)
-  // get all challenge resources
-  // const resources = await helper.getData(config.RESOURCES_API_URL, { challengeId })
-  // get all challenge submissions, all pages are retrieved
-  const subs = await helper.getAllPagesData(config.SUBMISSIONS_API_URL, { challengeId: v5challengeId })
+  const submissionCount = await helper.getData(`${config.SUBMISSIONS_API_URL}/${v5challengeId}/count`)
 
-  // function to find submitter handle by member id among challenge resources
-  // const getSubmitter = (memberId) => {
-  //   const resource = _.find(resources, (r) => String(r.memberId) === String(memberId))
-  //   if (!resource) {
-  //     // there are some rare cases that submitter resource is not found,
-  //     // e.g. user unregisters a challenge after uploading a submission,
-  //     // in such cases, return null submitter instead of disabling the whole challenge submissions data
-  //     return null
-  //   }
-  //   return resource.memberHandle
-  // }
+  let numOfSubmissions = _.get(submissionCount, config.CONTEST_SUBMISSION_TYPE, 0)
 
-  // construct data
-  // const submissions = []
-  // const checkpoints = []
-  let numOfSubmissions = 0
-  // let numOfRegistrants = 0
-  let numOfCheckpointSubmissions = 0
-  // const submittersMap = {}
+  let numOfCheckpointSubmissions = _.get(submissionCount, config.CHECKPOINT_SUBMISSION_TYPE, 0)
 
-  if (_.isEmpty(subs) && type) {
+  if (type && _.get(submissionCount, type, 0) === 0) {
     if (type === config.CONTEST_SUBMISSION_TYPE) {
-      numOfSubmissions += 1
+      numOfSubmissions = 1
     } else if (type === config.CHECKPOINT_SUBMISSION_TYPE) {
-      // target = checkpoints
-      numOfCheckpointSubmissions += 1
+      numOfCheckpointSubmissions = 1
     }
-  } else {
-    _.forEach(subs, (sub) => {
-      // let target
-      if (sub.type === config.CONTEST_SUBMISSION_TYPE) {
-        // target = submissions
-        numOfSubmissions += 1
-        // count number of submitters, only contest submissions are considered
-        // if (!submittersMap[sub.memberId]) {
-        // numOfRegistrants += 1
-        // submittersMap[sub.memberId] = true
-        // }
-      } else if (sub.type === config.CHECKPOINT_SUBMISSION_TYPE) {
-        // target = checkpoints
-        numOfCheckpointSubmissions += 1
-      }
-      // } else {
-      // ignore the submission, it is not type of contest submission or checkpoint submission
-      // return
-      // }
-      // add submission to submissions or checkpoints
-      // const record = _.find(target, (item) => String(item.submitterId) === String(sub.memberId))
-      // if (record) {
-      //   record.submissions.push({
-      //     submissionId: sub.id,
-      //     submissionTime: sub.created
-      //   })
-      // } else {
-      //   target.push({
-      //     submitter: getSubmitter(sub.memberId),
-      //     submitterId: sub.memberId,
-      //     submissions: [{
-      //       submissionId: sub.id,
-      //       submissionTime: sub.created
-      //     }]
-      //   })
-      // }
-    })
   }
 
   // update challenge's submissions data, only update changed fields to improve performance
@@ -329,15 +264,11 @@ async function updateSubmissionsData (challengeId, type) {
     id: v5challengeId,
     body: {
       doc: {
-        // submissions,
-        // checkpoints,
         numOfSubmissions,
-        // numOfRegistrants,
         numOfCheckpointSubmissions
       }
     }
   }
-  // logger.debug(`esQuery ${JSON.stringify(doc)}`)
   await client.update(doc)
 }
 
