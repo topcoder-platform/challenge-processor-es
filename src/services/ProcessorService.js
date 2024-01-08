@@ -252,11 +252,14 @@ async function updateSubmissionsData (challengeId, type) {
   const submissionCount = await helper.getData(`${config.SUBMISSIONS_API_URL}/${v5challengeId}/count`)
 
   let numOfSubmissions = _.get(submissionCount, config.CONTEST_SUBMISSION_TYPE, 0)
+  if (numOfSubmissions === 0) {
+    numOfSubmissions = _.get(submissionCount, config.CHALLENGE_SUBMISSION_TYPE, 0)
+  }
 
   let numOfCheckpointSubmissions = _.get(submissionCount, config.CHECKPOINT_SUBMISSION_TYPE, 0)
 
   if (type && _.get(submissionCount, type, 0) === 0) {
-    if (type === config.CONTEST_SUBMISSION_TYPE) {
+    if (type === config.CONTEST_SUBMISSION_TYPE || type === config.CHALLENGE_SUBMISSION_TYPE) {
       numOfSubmissions = 1
     } else if (type === config.CHECKPOINT_SUBMISSION_TYPE) {
       numOfCheckpointSubmissions = 1
