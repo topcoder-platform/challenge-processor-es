@@ -1,19 +1,15 @@
 version: 2
 defaults: &defaults
-    docker:
-      - image: cimg/python:3.11.0-browsers
+  docker:
+  - image: cimg/python:3.12.1-browsers
 install_dependency: &install_dependency
   name: Installation of build and deployment dependencies.
   command: |
-    sudo apt update
-    sudo apt install jq
-    sudo apt install python3-pip
-    sudo pip3 install awscli --upgrade
-    sudo pip3 install docker-compose
+    pip3 install awscli --upgrade
 install_deploysuite: &install_deploysuite
   name: Installation of install_deploysuite.
   command: |
-    git clone --branch v1.4.15 https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+    git clone --branch v1.4.17 https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
     cp ./../buildscript/master_deploy.sh .
     cp ./../buildscript/buildenv.sh .
     cp ./../buildscript/awsconfiguration.sh .
@@ -23,60 +19,61 @@ restore_cache_settings_for_build: &restore_cache_settings_for_build
 save_cache_settings: &save_cache_settings
   key: docker-node-modules-{{ checksum "yarn.lock" }}
   paths:
-    - node_modules
+  - node_modules
 
 builddeploy_steps: &builddeploy_steps
-      - checkout
-      - setup_remote_docker
-      - run: *install_dependency
-      - run: *install_deploysuite
-      - restore_cache: *restore_cache_settings_for_build
-      - run: ./build.sh ${APPNAME}
-      - save_cache: *save_cache_settings
-      - deploy:
-          name: Running MasterScript.
-          command: |
-            ./awsconfiguration.sh $DEPLOY_ENV
-            source awsenvconf
-            ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
-            source buildenvvar
-            ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME}
+- checkout
+- setup_remote_docker
+- run: *install_dependency
+- run: *install_deploysuite
+- restore_cache: *restore_cache_settings_for_build
+- run: ./build.sh ${APPNAME}
+- save_cache: *save_cache_settings
+- deploy:
+    name: Running MasterScript.
+    command: |
+      ./awsconfiguration.sh $DEPLOY_ENV
+      source awsenvconf
+      ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
+      source buildenvvar
+      ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME}
 
 
 jobs:
   # Build & Deploy against development backend
   "build-dev":
-    <<: *defaults
+    !!merge <<: *defaults
     environment:
       DEPLOY_ENV: "DEV"
       LOGICAL_ENV: "dev"
-      APPNAME: "challenge-processor-es"    
+      APPNAME: "challenge-processor-es"
     steps: *builddeploy_steps
 
   "build-prod":
-    <<: *defaults
+    !!merge <<: *defaults
     environment:
       DEPLOY_ENV: "PROD"
-      LOGICAL_ENV: "prod"    
-      APPNAME: "challenge-processor-es"  
+      LOGICAL_ENV: "prod"
+      APPNAME: "challenge-processor-es"
     steps: *builddeploy_steps
 
 workflows:
   version: 2
   build:
     jobs:
-      # Development builds are executed on "develop" branch only.
-      - "build-dev":
-          context : org-global
-          filters:
-            branches:
-              only:
-                - develop
+    # Development builds are executed on "develop" branch only.
+    - "build-dev":
+        context: org-global
+        filters:
+          branches:
+            only:
+            - develop
+            - TI-94
 
-      # Production builds are exectuted only on tagged commits to the
-      # master branch.
-      - "build-prod":
-          context : org-global
-          filters:
-            branches:
-              only: master
+    # Production builds are exectuted only on tagged commits to the
+    # master branch.
+    - "build-prod":
+        context: org-global
+        filters:
+          branches:
+            only: master

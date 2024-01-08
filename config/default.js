@@ -35,6 +35,7 @@ module.exports = {
   RESOURCES_API_URL: process.env.RESOURCES_API_URL || 'http://localhost:4000/v5/resources',
   CHALLENGE_API_URL: process.env.CHALLENGE_API_URL || 'http://localhost:4000/v5/challenges',
   CONTEST_SUBMISSION_TYPE: process.env.CONTEST_SUBMISSION_TYPE || 'Contest Submission',
+  CHALLENGE_SUBMISSION_TYPE: process.env.CHALLENGE_SUBMISSION_TYPE || 'challengesubmission',
   CHECKPOINT_SUBMISSION_TYPE: process.env.CHECKPOINT_SUBMISSION_TYPE || 'Checkpoint Submission',
 
   // superagent request timeout in milliseconds
