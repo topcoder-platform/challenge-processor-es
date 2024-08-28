@@ -89,7 +89,7 @@ function getOSClient () {
     // AWS EOSS configuration is different from other providers
     if (/.*amazonaws.*/.test(osHost)) {
       osClients['client'] = new opensearch.Client({
-        hosts: osHost,
+        node: osHost,
         amazonES: {
           region: config.get('osConfig.AWS_REGION'),
           credentials: new AWS.EnvironmentCredentials('AWS')
@@ -97,7 +97,7 @@ function getOSClient () {
       })
     } else {
       osClients['client'] = new opensearch.Client({
-        hosts: osHost
+        node: osHost
       })
     }
   }
