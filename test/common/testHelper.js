@@ -7,7 +7,7 @@ const config = require('config')
 const helper = require('../../src/common/helper')
 const expect = require('chai').expect
 
-const client = helper.getESClient()
+const client = helper.getOSClient()
 
 /**
  * function to deeply compare arrays  regardeless of the order
@@ -27,8 +27,7 @@ const deepCompareArrays = (arr1, arr2) => {
  */
 async function getESData (id) {
   return client.getSource({
-    index: config.get('esConfig.ES_INDEX'),
-    type: config.get('esConfig.ES_TYPE'),
+    index: config.get('osConfig.OS_INDEX'),
     id
   })
 }

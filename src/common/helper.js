@@ -4,16 +4,16 @@
 
 const AWS = require('aws-sdk')
 const config = require('config')
-const elasticsearch = require('elasticsearch')
+const opensearch = require('@opensearch-project/opensearch')
 const _ = require('lodash')
 const logger = require('./logger')
 const m2mAuth = require('tc-core-library-js').auth.m2m
 const m2m = m2mAuth(_.pick(config, ['AUTH0_URL', 'AUTH0_AUDIENCE', 'TOKEN_CACHE_TIME', 'AUTH0_PROXY_SERVER_URL']))
 const superagent = require('superagent')
 
-AWS.config.region = config.get('esConfig.AWS_REGION')
-// ES Client mapping
-const esClients = {}
+AWS.config.region = config.get('osConfig.AWS_REGION')
+// OS Client mapping
+const osClients = {}
 
 /**
  * Get M2M token.
@@ -80,31 +80,29 @@ async function getAllPagesData (url, query) {
 }
 
 /**
- * Get ES Client
- * @return {Object} Elastic Host Client Instance
+ * Get OS Client
+ * @return {Object} Opensearch Instance
  */
-function getESClient () {
-  const esHost = config.get('esConfig.HOST')
-  if (!esClients['client']) {
-    // AWS ES configuration is different from other providers
-    if (/.*amazonaws.*/.test(esHost)) {
-      esClients['client'] = elasticsearch.Client({
-        apiVersion: config.get('esConfig.API_VERSION'),
-        hosts: esHost,
+function getOSClient () {
+  const osHost = config.get('osConfig.HOST')
+  if (!osClients['client']) {
+    // AWS EOSS configuration is different from other providers
+    if (/.*amazonaws.*/.test(osHost)) {
+      osClients['client'] = opensearch.Client({
+        hosts: osHost,
         connectionClass: require('http-aws-es'), // eslint-disable-line global-require
         amazonES: {
-          region: config.get('esConfig.AWS_REGION'),
+          region: config.get('osConfig.AWS_REGION'),
           credentials: new AWS.EnvironmentCredentials('AWS')
         }
       })
     } else {
-      esClients['client'] = new elasticsearch.Client({
-        apiVersion: config.get('esConfig.API_VERSION'),
-        hosts: esHost
+      osClients['client'] = new opensearch.Client({
+        hosts: osHost
       })
     }
   }
-  return esClients['client']
+  return osClients['client']
 }
 
 /**
@@ -152,7 +150,7 @@ async function getLegacyChallengeId (challengeId) {
 module.exports = {
   getData,
   getAllPagesData,
-  getESClient,
+  getOSClient,
   getV5ChallengeId,
   getLegacyChallengeId
 }

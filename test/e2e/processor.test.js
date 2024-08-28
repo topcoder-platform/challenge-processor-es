@@ -30,15 +30,14 @@ const {
   dateFields
 } = require('../common/testData')
 
-const client = helper.getESClient()
+const client = helper.getOSClient()
 
 describe('TC Challenge Processor E2E Tests', () => {
   before(async () => {
     // remove ES record if any
     try {
       await client.delete({
-        index: config.get('esConfig.ES_INDEX'),
-        type: config.get('esConfig.ES_TYPE'),
+        index: config.get('osConfig.OS_INDEX'),
         id: challengeId,
         refresh: 'true'
       })
@@ -47,8 +46,7 @@ describe('TC Challenge Processor E2E Tests', () => {
     }
     // create ES record
     await client.create({
-      index: config.get('esConfig.ES_INDEX'),
-      type: config.get('esConfig.ES_TYPE'),
+      index: config.get('osConfig.OS_INDEX'),
       id: challengeId,
       body: challengeUpdatedMessage.payload,
       refresh: 'true'
@@ -58,8 +56,7 @@ describe('TC Challenge Processor E2E Tests', () => {
   after(async () => {
     // Remove the record after running tests
     await client.delete({
-      index: config.get('esConfig.ES_INDEX'),
-      type: config.get('esConfig.ES_TYPE'),
+      index: config.get('osConfig.OS_INDEX'),
       id: challengeId,
       refresh: 'true'
     })
