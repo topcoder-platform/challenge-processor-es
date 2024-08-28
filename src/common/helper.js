@@ -90,7 +90,6 @@ function getOSClient () {
     if (/.*amazonaws.*/.test(osHost)) {
       osClients['client'] = opensearch.Client({
         hosts: osHost,
-        connectionClass: require('http-aws-es'), // eslint-disable-line global-require
         amazonES: {
           region: config.get('osConfig.AWS_REGION'),
           credentials: new AWS.EnvironmentCredentials('AWS')
