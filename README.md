@@ -1,6 +1,6 @@
 # Topcoder - Challenge Elasticsearch Processor
 
-This microservice processes kafka events related to challenges and updates data in ElasticSearch
+This microservice processes kafka events related to challenges and updates data in ElasticSearch / Opensearch 
 
 ### Development deployment status
 [![CircleCI](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/develop.svg?style=svg)](https://circleci.com/gh/topcoder-platform/challenge-processor-es/tree/develop)
@@ -21,7 +21,7 @@ This microservice processes kafka events related to challenges and updates data 
 ## Prerequisites
 
 -  [NodeJS](https://nodejs.org/en/) (v8+)
--  [Elasticsearch v6](https://www.elastic.co/)
+-  [Opensearch]
 -  [Kafka](https://kafka.apache.org/)
 -  [Docker](https://www.docker.com/)
 -  [Docker Compose](https://docs.docker.com/compose/)
@@ -60,9 +60,9 @@ if provided, it can be either path to private key file or private key content
 - CONTEST_SUBMISSION_TYPE: contest submission type name, default value is 'Contest Submission'
 - CHECKPOINT_SUBMISSION_TYPE: checkpoint submission type name, default value is 'Checkpoint Submission'
 - REQUEST_TIMEOUT: superagent request timeout in milliseconds, default value is 20000
-- esConfig: config object for Elasticsearch
+- osConfig: config object for Opensearch
 
-Refer to `esConfig` variable in `config/default.js` for ES related configuration.
+Refer to `osConfig` variable in `config/default.js` for OS related configuration.
 
 Set the following environment variables so that the app can get TC M2M token (use 'set' insted of 'export' for Windows OS):
 ```
@@ -79,7 +79,7 @@ Config for tests are at `config/test.js`, it overrides some default config.
 ## Available commands
 1. install dependencies `npm i`
 2. run code lint check `npm run lint`, running `npm run lint:fix` can fix some lint errors if any
-3. initialize Elasticsearch, create configured Elasticsearch index if not present: `npm run init-es`
+3. initialize Elasticsearch / Opensearch, create configured index if not present: `npm run init-es`
 4. or to re-create the index: `npm run init-es force`
 5. start processor app `npm start`
 
@@ -138,14 +138,11 @@ in the console, write message, one message per line:
 
 - send/view messages to/from other topics are similar
 
-### Local Elasticsearch setup
-- in the `docker-es` folder, run `docker-compose up`
-
 ### Local deployment without Docker
 - start mock API, go to `mock` folder, run `npm i` and `npm start`, mock api is running at `http://localhost:4000`
 - install dependencies `npm i`
 - run code lint check `npm run lint`, running `npm run lint:fix` can fix some lint errors if any
-- initialize Elasticsearch, create configured Elasticsearch index if not present: `npm run init-es`
+- initialize Elasticsearch / Opensearch, create configured index if not present: `npm run init-es`
 - or to re-create the index: `npm run init-es force`
 - start processor app `npm start`
 
@@ -173,19 +170,19 @@ docker-compose up
 Test configuration is at `config/test.js`. You don't need to change them.
 The following test parameters can be set in config file or in env variables:
 
-- esConfig: config object for Elasticsearch
+- osConfig: config object for Elasticsearch / Opensearch
 
 Integration tests use different index `challenge-test` which is not same as the usual index `challenge`.
 
-Please ensure to create the index `challenge-test` or the index specified in the environment variable `ES_INDEX_TEST` before running the Integration tests. You could re-use the existing scripts to create index but you would need to set the below environment variable
+Please ensure to create the index `challenge-test` or the index specified in the environment variable `OS_INDEX_TEST` before running the Integration tests. You could re-use the existing scripts to create index but you would need to set the below environment variable
 ```
-export ES_INDEX=challenge-test
+export OS_INDEX=challenge-test
 ```
-Or, you may temporarily modify the esConfig.ES_INDEX in config/default.js to `challenge-test` and run `npm run init-es` to create test index.
+Or, you may temporarily modify the osConfig.OS_INDEX in config/default.js to `challenge-test` and run `npm run init-es` to create test index.
 
 ### Prepare
 - Mock API should be started.
-- Initialize Elasticsearch.
+- Initialize Elasticsearch / Opensearch
 - Various config parameters should be properly set.
 
 ### Running unit tests

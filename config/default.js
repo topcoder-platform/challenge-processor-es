@@ -41,11 +41,9 @@ module.exports = {
   // superagent request timeout in milliseconds
   REQUEST_TIMEOUT: process.env.REQUEST_TIMEOUT ? Number(process.env.REQUEST_TIMEOUT) : 20000,
 
-  esConfig: {
-    HOST: process.env.ES_HOST || 'localhost:9200',
+  osConfig: {
+    HOST: process.env.OS_HOST || 'localhost:9200',
     AWS_REGION: process.env.AWS_REGION || 'us-east-1', // AWS Region to be used if we use AWS ES
-    API_VERSION: process.env.ES_API_VERSION || '6.8',
-    ES_INDEX: process.env.ES_INDEX || 'challenge',
-    ES_TYPE: process.env.ES_TYPE || '_doc' // ES 6.x accepts only 1 Type per index and it's mandatory to define it
+    OS_INDEX: process.env.OS_INDEX || 'challenge',
   }
 }

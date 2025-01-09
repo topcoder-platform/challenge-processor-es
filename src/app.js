@@ -71,6 +71,8 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
 // check if there is kafka connection alive
 function check () {
   if (!consumer.client.initialBrokers && !consumer.client.initialBrokers.length) {
+    logger.debug(`consumer.client.initialBrokers ${JSON.stringify(consumer.client.initialBrokers)}`)
+    logger.debug('Health check failed')
     return false
   }
   let connected = true

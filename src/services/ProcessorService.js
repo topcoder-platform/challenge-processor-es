@@ -1,5 +1,5 @@
 /**
- * Service for challenge Elasticsearch processor.
+ * Service for challenge Elasticsearch / Opensearch processor.
  */
 
 const _ = require('lodash')
@@ -12,7 +12,7 @@ const moment = require('moment')
 Joi.optionalId = () => Joi.string().uuid()
 Joi.id = () => Joi.optionalId().required()
 
-const client = helper.getESClient()
+const client = helper.getOSClient()
 
 const intOrUUID = () => Joi.alternatives().try(Joi.number().integer().min(1), Joi.string().uuid())
 
@@ -37,7 +37,7 @@ function getChallengeEndDate (phases, startDate) {
 }
 
 /**
- * Update message in Elasticsearch.
+ * Update message in OpenSearch.
  * @param {Object} message the challenge updated message
  */
 async function update (message) {
@@ -78,7 +78,7 @@ async function update (message) {
       doc.submissionEndDate = submissionPhase.actualEndDate || submissionPhase.scheduledEndDate
     }
   }
-  logger.debug('Updating ES', doc)
+  logger.debug('Updating OS', doc)
   await client.update({
     ...request,
     body: {
@@ -176,8 +176,7 @@ async function updateNumberOfRegistrants (challengeId) {
   logger.debug(`Update Number of Registrants: ${JSON.stringify(resourceCount)} Length: ${numOfRegistrants}`)
   // update challenge's number of registrants, only update changed fields to improve performance
   await client.update({
-    index: config.get('esConfig.ES_INDEX'),
-    type: config.get('esConfig.ES_TYPE'),
+    index: config.get('osConfig.OS_INDEX'),
     id: challengeId,
     body: {
       doc: { numOfRegistrants }
@@ -270,8 +269,7 @@ async function updateSubmissionsData (challengeId, type) {
 
   // update challenge's submissions data, only update changed fields to improve performance
   const doc = {
-    index: config.get('esConfig.ES_INDEX'),
-    type: config.get('esConfig.ES_TYPE'),
+    index: config.get('osConfig.OS_INDEX'),
     id: v5challengeId,
     body: {
       doc: {
